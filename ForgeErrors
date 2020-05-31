@@ -1,0 +1,12 @@
+"E00G0", "Fatal Error: Failed to initialize GLFW -> !glfwInit()."
+"E01G1", "Fatal Error: Failed to create window -> !glfwCreateWindow()"
+"E02V0", "Fatal Error: Requested validation layers were not found -> !AllValidationLayersSupported()"
+"E03V1", "Fatal Error: Failed to create instance -> vkCreateInstance()"
+"E04S0", "Fatal Error: Window surface creation failed."
+"E05V2", "Fatal Error: Failed to setup debug messenger"
+"E06V3", "Error: Validation Layer ->", msg
+
+"P00G0", "Fatal Error: Failed to find GPU that supports Vulkan."
+"P01G1", "Fatal Error: Failed to find GPU that supports required Vulkan operation."
+
+"L00G0", "Fatal Error: Failed to create a logical device -> graphics card."

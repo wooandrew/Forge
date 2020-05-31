@@ -1,4 +1,7 @@
 .gitignore
+CMakeSettings.json
+VERSION
+
 /.vs
 /includes
 /lib
