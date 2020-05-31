@@ -15,34 +15,34 @@
 
 namespace Forge {
 
-	struct SwapChainSupportDetails {					// Struct containing Swap Chain support details
+    struct SwapChainSupportDetails {                    // Struct containing Swap Chain support details
 
-		VkSurfaceCapabilitiesKHR capabilities;			// Struct containing details of the capabilities of the swap chains
-		std::vector<VkSurfaceFormatKHR> formats;		// List of structures describing a supported swapchain format-color space pair
-		std::vector<VkPresentModeKHR> presentModes;		// List of presentation modes supported by the device
-	};
-	SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice& device, VkSurfaceKHR& surface);				// Populates SwapChainSupportDetails
-	VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);		// Choose surface format
-	VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);			// Choose surface present mode
-	VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);									// Choose swap extent -> surface resolution
+        VkSurfaceCapabilitiesKHR capabilities;          // Struct containing details of the capabilities of the swap chains
+        std::vector<VkSurfaceFormatKHR> formats;        // List of structures describing a supported swapchain format-color space pair
+        std::vector<VkPresentModeKHR> presentModes;     // List of presentation modes supported by the device
+    };
+    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice& device, VkSurfaceKHR& surface);             // Populates SwapChainSupportDetails
+    VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);        // Choose surface format
+    VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);         // Choose surface present mode
+    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);                                  // Choose swap extent -> surface resolution
 
-	// Swapchain class
-	class Swapchain {
+    // Swapchain class
+    class Swapchain {
 
-	public:
+    public:
 
-		Swapchain();		// Default constructor
-		~Swapchain();		// Default destructor
+        Swapchain();        // Default constructor
+        ~Swapchain();       // Default destructor
 
-		int init(VkPhysicalDevice& device, VkSurfaceKHR& surface);		// Initialize swapchain
+        int init(VkPhysicalDevice& device, VkSurfaceKHR& surface);      // Initialize swapchain
 
-	private:
+    private:
 
-		VkSwapchainKHR swapchain;					// Handle to swapchain object
-		std::vector<VkImage> swapchainImages;		// List of handles to image objects
-		VkFormat swapchainImageFormat;				// Swapchain image format
-		VkExtent2D swapchainExtent;					// 2D array containing swapchain extent
-	};
+        VkSwapchainKHR swapchain;                   // Handle to swapchain object
+        std::vector<VkImage> swapchainImages;       // List of handles to image objects
+        VkFormat swapchainImageFormat;              // Swapchain image format
+        VkExtent2D swapchainExtent;                 // 2D array containing swapchain extent
+    };
 }
 
 #endif // !THEFORGE_SWAPCHAIN

@@ -14,21 +14,21 @@
 
 namespace Forge {
 
-	class LogicalGraphicsCard {
+    class LogicalGraphicsCard {
 
-	public:
+    public:
 
-		LogicalGraphicsCard();		// Default constructor
-		~LogicalGraphicsCard();		// Default destructor
+        LogicalGraphicsCard();          // Default constructor
+        ~LogicalGraphicsCard();         // Default destructor
 
-		int init(VkPhysicalDevice physicalDevice);		// Initalize logical device
-		void cleanup();									// Cleanup logical device
+        int init(VkPhysicalDevice physicalDevice);          // Initalize logical device
+        void cleanup();                                     // Cleanup logical device
 
-	private:
-		VkDevice device;			// Handle to logical device
-		VkQueue graphicsQueue;		// Handle to graphics queue
-		VkQueue presentQueue;		// Handle to present queue
-	};
+    private:
+        VkDevice device;            // Handle to logical device
+        VkQueue graphicsQueue;      // Handle to graphics queue
+        VkQueue presentQueue;       // Handle to present queue
+    };
 }
  
 #endif // !THEFORGE_LOGICAL_DEVICES

@@ -14,25 +14,25 @@
 
 namespace Forge {
 
-	// Physical Device -> Graphics Card
-	class GraphicsCard {
+    // Physical Device -> Graphics Card
+    class GraphicsCard {
 
-	public:
+    public:
 
-		GraphicsCard();			// Default Constructor
-		~GraphicsCard();		// Default Destructor
+        GraphicsCard();         // Default Constructor
+        ~GraphicsCard();        // Default Destructor
 
-		int autochoose();		// Automatically chooses an appropriate graphics card
+        int autochoose();       // Automatically chooses an appropriate graphics card
 
-		int SelectGraphicsCard();												// Selects the physical graphics card to use
-		static bool CheckDeviceSupport(VkPhysicalDevice device);				// Checks if physical device supports Vulkan operation
-		static bool CheckDeviceExtensionSupport(VkPhysicalDevice device);		// Checks if physical device supports Vulkan extensions
+        int SelectGraphicsCard();                                               // Selects the physical graphics card to use
+        static bool CheckDeviceSupport(VkPhysicalDevice device);                // Checks if physical device supports Vulkan operation
+        static bool CheckDeviceExtensionSupport(VkPhysicalDevice device);       // Checks if physical device supports Vulkan extensions
 
-		VkPhysicalDevice& GetGraphicsCard();		// Returns the handle to the physical graphics card
+        VkPhysicalDevice& GetGraphicsCard();        // Returns the handle to the physical graphics card
 
-	private:
-		VkPhysicalDevice PhysicalDevice;		// Handle to physical device object
-	};
+    private:
+        VkPhysicalDevice PhysicalDevice;        // Handle to physical device object
+    };
 }
 
 #endif // !THEFORGE_PHYSICAL_DEVICES
