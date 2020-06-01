@@ -18,6 +18,8 @@ namespace Forge {
         version.PATCH = 0;
 
         window = nullptr;
+        instance = VK_NULL_HANDLE;
+        surface = VK_NULL_HANDLE;
 
         dbgMessenger = VK_NULL_HANDLE;
     }
@@ -98,6 +100,11 @@ namespace Forge {
         }
 
         SetupDebugMessenger();
+
+        if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {           // If vkSurface creation fails
+            ASWL::utilities::Logger("E04S0", "Fatal Error: Window surface creation failed.");       // then log the error
+            return 5;                                                                               // and return corresponding error value
+        }
 
         return 0;
     }
@@ -230,6 +237,15 @@ namespace Forge {
     // Return window instance on request
     GLFWwindow* Engine::GetWindow() {
         return window;
+    }
+
+    // Return the Vulkan instance on request
+    VkInstance& Engine::GetInstance() {
+        return instance;
+    }
+    // Returns the Vulkan surface on request
+    VkSurfaceKHR& Engine::GetSurface() {
+        return surface;
     }
 
     // Return whether or not window should close based on polled events

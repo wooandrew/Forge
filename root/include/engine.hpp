@@ -48,6 +48,9 @@ namespace Forge {    // Wrapper namespace
         }; MetaData metadata;
 
         GLFWwindow* GetWindow();                // Returns the window instance
+        VkInstance& GetInstance();              // Returns the Vulkan instance
+        VkSurfaceKHR& GetSurface();             // Returns the Vulkan surface
+
         bool WindowShouldClose() const;         // Return if window should close
 
     private:
@@ -55,6 +58,8 @@ namespace Forge {    // Wrapper namespace
         ASWL::utilities::Version version;       // Engine version
 
         GLFWwindow* window;         // GLFW Window ... it's just the window.
+        VkInstance instance;        // Vulkan instance
+        VkSurfaceKHR surface;       // Vulkan window surface
 
         std::vector<const char*> GetRequiredExtensions();       // Returns extensions required by application including GLFW
 

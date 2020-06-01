@@ -23,18 +23,18 @@ int main() {
 
     int ret = 0;
     ret += e.init();
-    gc.autochoose();
-    ret += lgc.init(gc.GetGraphicsCard());
+    gc.autochoose(e.GetInstance(), e.GetSurface());
+    ret += lgc.init(gc.GetGraphicsCard(), e.GetSurface());
 
     if (ret != 0) {
-        std::cout << ret << " returned by Engine::init()\n";
+        std::cout << ret << " returned by TheForge\n";
         return ret;
     }
 
     uint32_t extensionCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
-    std::cout << ret << " returned by Engine::init()\n";
+    std::cout << ret << " returned by TheForge\n";
     std::cout << extensionCount << " extensions supported\n";
 
 

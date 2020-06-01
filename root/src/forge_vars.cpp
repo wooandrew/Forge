@@ -13,7 +13,7 @@ namespace Forge {
     }
 
     // Finds and returns queue family supported by specified device
-    QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice& device) {
+    QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice& device, VkSurfaceKHR& surface) {
 
         QueueFamilyIndices indices;
 
@@ -24,16 +24,16 @@ namespace Forge {
         vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());      // Then push queue families into list
 
         for (unsigned int i = 0; i < queueFamilies.size(); i++) {           // Iterate through all queue family properties
-
+        
             if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)        // If queue family supports VK_QUEUE_GRAPHICS_BIT
                 indices.graphicsFamily = i;                                 // Set graphics queue index
-
+        
             VkBool32 presentSupport = false;                                                // Initialize present support
             vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);      // Check if physical device supports presenting to surface
-
+        
             if (presentSupport)                 // If device supports presenting to surface
                 indices.presentFamily = i;      // Set present queue index
-
+        
             if (indices.hasValue())         // If the graphics family queue index has a value
                 break;                      // break out of the loop
         }

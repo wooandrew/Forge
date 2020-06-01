@@ -22,10 +22,10 @@ namespace Forge {
     }
 
     // Automatically chooses an appropriate graphics card
-    int GraphicsCard::autochoose() {
+    int GraphicsCard::autochoose(VkInstance& instance, VkSurfaceKHR& surface) {
         
-        int graphicsCardFound = SelectGraphicsCard();
-        bool graphicsCardSupported = CheckDeviceSupport(PhysicalDevice);
+        int graphicsCardFound = SelectGraphicsCard(instance, surface);
+        bool graphicsCardSupported = CheckDeviceSupport(PhysicalDevice, surface);
 
         if (graphicsCardFound != 0 || !graphicsCardSupported)           // If a graphics card is not found or the graphics card is not supported
             return graphicsCardFound & (int)graphicsCardSupported;      // Return the error as a combination of both errors
@@ -34,12 +34,10 @@ namespace Forge {
     }
 
     // Selects the graphics card to use
-    int GraphicsCard::SelectGraphicsCard() {
+    int GraphicsCard::SelectGraphicsCard(VkInstance& instance, VkSurfaceKHR& surface) {
 
         uint32_t deviceCount = 0;                                           // Number of devices that support Vulkan
         vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);        // Get number of devices that support Vulkan
-
-        std::cout << deviceCount << std::endl;
 
         if (deviceCount == 0) {                                                                             // If there are no devices that support Vulkan
             ASWL::utilities::Logger("P00G0", "Fatal Error: Failed to find GPU that supports Vulkan.");      // then log the error
@@ -50,24 +48,24 @@ namespace Forge {
         vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());         // Then push supported devices into list
 
         // Iterate through all supported devices
-        for (const auto& device : devices) {
+        for (VkPhysicalDevice& device : devices) {
 
-            if (CheckDeviceSupport(device)) {       // If the device supports Vulkan operations
-                PhysicalDevice = device;            // Set the selected graphics card to that device
-                break;                              // then break out of the loop
+            if (CheckDeviceSupport(device, surface)) {      // If the device supports Vulkan operations
+                PhysicalDevice = device;                    // Set the selected graphics card to that device
+                break;                                      // then break out of the loop
             }
         }
 
         if (PhysicalDevice == VK_NULL_HANDLE) {                                                                                 // If the GPU is null
             ASWL::utilities::Logger("P01G1", "Fatal Error: Failed to find GPU that supports required Vulkan operation.");       // then log the error
-            return 1;                                                                                                           // and return the error
+            return 2;                                                                                                           // and return the error
         }
 
         return 0;
     }
 
     // Checks if the physical device supports necessary Vulkan operations
-    bool GraphicsCard::CheckDeviceSupport(VkPhysicalDevice device) {
+    bool GraphicsCard::CheckDeviceSupport(VkPhysicalDevice& device, VkSurfaceKHR& surface) {
 
         //VkPhysicalDeviceProperties deviceProperties;
         //vkGetPhysicalDeviceProperties(device, &deviceProperties);
@@ -75,7 +73,7 @@ namespace Forge {
         //VkPhysicalDeviceFeatures deviceFeatures;
         //vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
 
-        QueueFamilyIndices indices = FindQueueFamilies(device);
+        QueueFamilyIndices indices = FindQueueFamilies(device, surface);
         bool extensionsSupported = CheckDeviceExtensionSupport(device);
 
         bool swapChainAdequacy = false;                                                                             // Is swap chain adequate
@@ -84,11 +82,11 @@ namespace Forge {
             swapChainAdequacy = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();        // The swap chain is adequate if the list of formats and present modes is not empty
         }
 
-        return indices.hasValue() && extensionsSupported && swapChainAdequacy;
+        return indices.hasValue() && extensionsSupported;//&& swapChainAdequacy;
     }
 
     // Checks if physical device supports Vulkan extensions
-    bool GraphicsCard::CheckDeviceExtensionSupport(VkPhysicalDevice device) {
+    bool GraphicsCard::CheckDeviceExtensionSupport(VkPhysicalDevice& device) {
 
         uint32_t extensionCount = 0;                                                            // Number of extensions supported by the device
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);        // Get number of extensions the device supports

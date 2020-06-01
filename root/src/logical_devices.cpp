@@ -26,10 +26,10 @@ namespace Forge {
 
 
     // Initialize 
-    int LogicalGraphicsCard::init(VkPhysicalDevice physicalDevice) {
+    int LogicalGraphicsCard::init(VkPhysicalDevice physicalDevice, VkSurfaceKHR& surface) {
 
         // Get the queue family index of the graphics card
-        QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
+        QueueFamilyIndices indices = FindQueueFamilies(physicalDevice, surface);
 
         float queuePriority = 1.0f;     // Set the queue priority of queue index. From 0.0f to 1.0f, higher values garner higher priorities.
 

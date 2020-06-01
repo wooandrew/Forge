@@ -28,7 +28,7 @@ namespace Forge {
 
     // Swapchain class
     class Swapchain {
-
+        
     public:
 
         Swapchain();        // Default constructor

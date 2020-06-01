@@ -119,7 +119,7 @@ namespace Forge {
         createInfo.imageArrayLayers = 1;                                    // Number of views in a multiview surface
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;        // Swapchain intended use
 
-        QueueFamilyIndices indices = FindQueueFamilies(device);                                                 // Get queue family indices
+        QueueFamilyIndices indices = FindQueueFamilies(device, surface);                                        // Get queue family indices
         uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };      // List of queue family indices
 
         if (indices.graphicsFamily != indices.presentFamily) {              // If queue family indices are not equal

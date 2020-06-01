@@ -21,8 +21,8 @@ namespace Forge {
         LogicalGraphicsCard();          // Default constructor
         ~LogicalGraphicsCard();         // Default destructor
 
-        int init(VkPhysicalDevice physicalDevice);          // Initalize logical device
-        void cleanup();                                     // Cleanup logical device
+        int init(VkPhysicalDevice physicalDevice, VkSurfaceKHR& surface);       // Initalize logical device
+        void cleanup();                                                         // Cleanup logical device
 
     private:
         VkDevice device;            // Handle to logical device
