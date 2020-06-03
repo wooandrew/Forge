@@ -24,6 +24,8 @@ namespace Forge {
         int init(VkPhysicalDevice physicalDevice, VkSurfaceKHR& surface);       // Initalize logical device
         void cleanup();                                                         // Cleanup logical device
 
+        VkDevice& GetDevice();      // Returns logical device -> graphics card
+
     private:
         VkDevice device;            // Handle to logical device
         VkQueue graphicsQueue;      // Handle to graphics queue

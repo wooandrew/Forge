@@ -215,7 +215,7 @@ namespace Forge {
                                                          const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,         // Pointer to struct containing report details
                                                          void* pUsrData)                                                    // Pointer to struct allowing user to pass data
     {
-        ASWL::utilities::Logger(std::string("E06V4"), std::string("Error: Validation Layer ->"), std::string(pCallbackData->pMessage));         // Log the error
+        ASWL::utilities::Logger(std::string("E06V4"), std::string("Error: Validation Layer -> "), std::string(pCallbackData->pMessage));        // Log the error
         return VK_FALSE;
     }
 

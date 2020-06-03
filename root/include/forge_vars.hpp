@@ -23,8 +23,8 @@ namespace Forge {
     constexpr bool DEBUG_MODE = true;           // If true, enable debug mode
 #endif
 
-    static const std::vector<const char*> ValidationLayers = { "VK_LAYER_KHRONOS_validation" };            // List of validation layers to enable
-    static const std::vector<const char*> DeviceExtensions = { "VK_KHR_SWAPCHAIN_EXTENSION_NAME" };        // List of device extensions to enable
+    static const std::vector<const char*> ValidationLayers = { "VK_LAYER_KHRONOS_validation" };             // List of validation layers to enable
+    static const std::vector<const char*> DeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };           // List of device extensions to enable
 
     struct QueueFamilyIndices {                         // Struct containing Queue Family indices
 

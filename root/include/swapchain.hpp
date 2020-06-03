@@ -34,7 +34,8 @@ namespace Forge {
         Swapchain();        // Default constructor
         ~Swapchain();       // Default destructor
 
-        int init(VkPhysicalDevice& device, VkSurfaceKHR& surface);      // Initialize swapchain
+        int init(VkPhysicalDevice& graphicscard, VkSurfaceKHR& surface, VkDevice& logicaldevice);       // Initialize swapchain
+        void cleanup();
 
     private:
 
@@ -42,6 +43,10 @@ namespace Forge {
         std::vector<VkImage> swapchainImages;       // List of handles to image objects
         VkFormat swapchainImageFormat;              // Swapchain image format
         VkExtent2D swapchainExtent;                 // 2D array containing swapchain extent
+
+        std::vector<VkImageView> swapchainImageViews;       // List of handles to image view object
+
+        VkDevice logicaldevice;         // Address to Logical device
     };
 }
 

@@ -389,6 +389,7 @@ private:
     }
 
     bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
+
         uint32_t extensionCount;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 

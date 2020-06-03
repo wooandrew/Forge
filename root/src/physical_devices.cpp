@@ -27,7 +27,7 @@ namespace Forge {
         int graphicsCardFound = SelectGraphicsCard(instance, surface);
         bool graphicsCardSupported = CheckDeviceSupport(PhysicalDevice, surface);
 
-        if (graphicsCardFound != 0 || !graphicsCardSupported)           // If a graphics card is not found or the graphics card is not supported
+        if (graphicsCardFound == 0 || !graphicsCardSupported)           // If a graphics card is not found or the graphics card is not supported
             return graphicsCardFound & (int)graphicsCardSupported;      // Return the error as a combination of both errors
 
         return 0;
@@ -82,13 +82,13 @@ namespace Forge {
             swapChainAdequacy = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();        // The swap chain is adequate if the list of formats and present modes is not empty
         }
 
-        return indices.hasValue() && extensionsSupported;//&& swapChainAdequacy;
+        return indices.hasValue() && extensionsSupported && swapChainAdequacy;
     }
 
     // Checks if physical device supports Vulkan extensions
     bool GraphicsCard::CheckDeviceExtensionSupport(VkPhysicalDevice& device) {
 
-        uint32_t extensionCount = 0;                                                            // Number of extensions supported by the device
+        uint32_t extensionCount;                                                                // Number of extensions supported by the device
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);        // Get number of extensions the device supports
 
         std::vector<VkExtensionProperties> availableExtensions(extensionCount);                                     // List of available extensions

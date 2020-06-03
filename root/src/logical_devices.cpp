@@ -81,5 +81,10 @@ namespace Forge {
     void LogicalGraphicsCard::cleanup() {
         vkDestroyDevice(device, nullptr);       // Destroy logical device
     }
+
+    // Returns logical device (graphics card) on request
+    VkDevice& LogicalGraphicsCard::GetDevice() {
+        return device;
+    }
 }
  

@@ -10,3 +10,8 @@
 "P01G1", "Fatal Error: Failed to find GPU that supports required Vulkan operation."
 
 "L00G0", "Fatal Error: Failed to create a logical device -> graphics card."
+
+"S0000", "Fatal Error: Failed to create vertex shader module."
+"S0001", "Fatal Error: Failed to create fragment shader module."
+"S0002", "Fatal Error: Failed to load shader from [" + path + "]."
+"S0003", "Fatal Error: Only SPIR-V is currently supported."
