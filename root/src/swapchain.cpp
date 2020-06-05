@@ -197,4 +197,9 @@ namespace Forge {
         for (auto imageview : swapchainImageViews)
             vkDestroyImageView(logicaldevice, imageview, nullptr);
     }
+
+    // Returns swapchain extent on request
+    VkExtent2D Swapchain::GetExtent() {
+        return swapchainExtent;
+    }
 }

@@ -37,6 +37,8 @@ namespace Forge {
         int init(VkPhysicalDevice& graphicscard, VkSurfaceKHR& surface, VkDevice& logicaldevice);       // Initialize swapchain
         void cleanup();
 
+        VkExtent2D GetExtent();     // Returns swapchain extent
+
     private:
 
         VkSwapchainKHR swapchain;                   // Handle to swapchain object

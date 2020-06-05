@@ -1,7 +1,7 @@
-// TheForge - src/shader (c) Andrew Woo, 2020
+// TheForge - src/pipeline (c) Andrew Woo, 2020
 
-#ifndef THEFORGE_SHADER
-#define THEFORGE_SHADER
+#ifndef THEFORGE_PIPELINE
+#define THEFORGE_PIPELINE
 
 // Standard Library
 #include <string>
@@ -23,14 +23,14 @@ namespace Forge {
         THE_FORGE_VK_SHADER_TYPE_FRAGMENT
     };
 
-    class Shader {
+    class Pipeline {
 
     public:
 
-        Shader();       // Default constructor
-        ~Shader();      // Default destructor
+        Pipeline();       // Default constructor
+        ~Pipeline();      // Default destructor
 
-        int init(VkDevice& device);     // Initialze shader
+        int init(VkDevice& device, VkExtent2D swExtent);     // Initialze shader
 
         // Loads shader given shader path, type, and language
         int LoadShader(const std::string& path, ShaderType type, ShaderLanguage language = ShaderLanguage::THE_FORGE_VK_SHADER_LANGUAGE_SPV);
@@ -48,7 +48,9 @@ namespace Forge {
         std::vector<char> frag;         // Fragment shader buffer
 
         VkDevice device;
+
+        VkPipelineLayout pipelineLayout;
     };
 }
 
-#endif // !THEFORGE_SHADER
+#endif // !THEFORGE_PIPELINE

@@ -11,7 +11,8 @@
 
 "L00G0", "Fatal Error: Failed to create a logical device -> graphics card."
 
-"S0000", "Fatal Error: Failed to create vertex shader module."
-"S0001", "Fatal Error: Failed to create fragment shader module."
-"S0002", "Fatal Error: Failed to load shader from [" + path + "]."
-"S0003", "Fatal Error: Only SPIR-V is currently supported."
+"P00S0", "Fatal Error: Failed to create vertex shader module."
+"P01S1", "Fatal Error: Failed to create fragment shader module."
+"P0002", "Fatal Error: Failed to create pipeline layout."
+"P03S2", "Fatal Error: Failed to load shader from [" + path + "]."
+"P04S3", "Fatal Error: Only SPIR-V is currently supported."
