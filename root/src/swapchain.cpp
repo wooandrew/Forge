@@ -202,4 +202,12 @@ namespace Forge {
     VkExtent2D Swapchain::GetExtent() {
         return swapchainExtent;
     }
+    // Returns swapchain image format on request
+    VkFormat Swapchain::GetImageFormat() {
+        return swapchainImageFormat;
+    }
+    // Returns swapchaim image views on request
+    const std::vector<VkImageView> Swapchain::GetImageViews() {
+        return swapchainImageViews;
+    }
 }

@@ -16,11 +16,6 @@
 
 #include <ASWL/utilities.hpp>
 
-void CLOG(std::string belt, int ret) {
-    std::string m00001 = belt + " [" + std::to_string(ret) + "] returned by TheForge.";
-    ASWL::utilities::Logger("00001", m00001);
-}
-
 int main() {
 
     util::Logger("00000", "Hello this is a test");
@@ -29,9 +24,19 @@ int main() {
     Forge::GraphicsCard gc;
     Forge::LogicalGraphicsCard lgc;
     Forge::Swapchain spc;
-    Forge::Pipeline shader;
+    Forge::Pipeline pipeline;
 
     int ret = 0;
+
+    auto CLOG = [=](std::string belt, int ret) {
+        std::string m00001 = belt + " [" + std::to_string(ret) + "] returned by TheForge.";
+        ASWL::utilities::Logger("00001", m00001);
+    };
+
+    CLOG("CLOG-TEST", 0);
+
+    e.metadata.vkAppName = "TheForge Sandbox";
+    e.metadata.windowTitle = "TheForge Sandbox";
 
     ret += e.init();
     if (ret != 0) {
@@ -53,7 +58,7 @@ int main() {
         CLOG("swapchain", ret);
         return ret;
     }
-    ret += shader.init(lgc.GetDevice(), spc.GetExtent());
+    ret += pipeline.init(lgc.GetDevice(), spc);
     if (ret != 0) {
         CLOG("pipeline", ret);
         return ret;

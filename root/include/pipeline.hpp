@@ -11,6 +11,9 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
+// TheForge includes
+#include "swapchain.hpp"
+
 namespace Forge {
 
     enum class ShaderLanguage {
@@ -30,7 +33,7 @@ namespace Forge {
         Pipeline();       // Default constructor
         ~Pipeline();      // Default destructor
 
-        int init(VkDevice& device, VkExtent2D swExtent);     // Initialze shader
+        int init(VkDevice& device, Swapchain& swapchain);       // Initialze shader
 
         // Loads shader given shader path, type, and language
         int LoadShader(const std::string& path, ShaderType type, ShaderLanguage language = ShaderLanguage::THE_FORGE_VK_SHADER_LANGUAGE_SPV);
@@ -47,9 +50,13 @@ namespace Forge {
         std::vector<char> vert;         // Vertex shader buffer
         std::vector<char> frag;         // Fragment shader buffer
 
-        VkDevice device;
+        VkDevice device;        // Handle to virtual device
 
-        VkPipelineLayout pipelineLayout;
+        std::vector<VkFramebuffer> swapchainFramebuffers;       // List of handles to swapchain framebuffers
+
+        VkPipelineLayout pipelineLayout;        // Handle to pipeline layout object
+        VkRenderPass renderPass;                // Handle to renderpass object
+        VkPipeline graphicsPipeline;            // Handle to graphics pipeline object
     };
 }
 

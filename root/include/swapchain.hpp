@@ -37,7 +37,9 @@ namespace Forge {
         int init(VkPhysicalDevice& graphicscard, VkSurfaceKHR& surface, VkDevice& logicaldevice);       // Initialize swapchain
         void cleanup();
 
-        VkExtent2D GetExtent();     // Returns swapchain extent
+        VkExtent2D GetExtent();         // Returns swapchain extent
+        VkFormat GetImageFormat();      // Returns swapchain image format
+        const std::vector<VkImageView> GetImageViews();     // Returns swapchaim image views
 
     private:
 
@@ -48,7 +50,7 @@ namespace Forge {
 
         std::vector<VkImageView> swapchainImageViews;       // List of handles to image view object
 
-        VkDevice logicaldevice;         // Address to Logical device
+        VkDevice logicaldevice;         // Handle to Logical device
     };
 }
 

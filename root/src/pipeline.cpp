@@ -1,5 +1,7 @@
 // TheForge - src/pipeline (c) Andrew Woo, 2020
 
+#pragma warning(disable : 26812)
+
 #include "pipeline.hpp"
 
 // Standard Library
@@ -10,16 +12,53 @@
 
 namespace Forge {
 
+    // Default constructor
     Pipeline::Pipeline() {
         device = VK_NULL_HANDLE;
+        pipelineLayout = VK_NULL_HANDLE;
+        renderPass = VK_NULL_HANDLE;
+        graphicsPipeline = VK_NULL_HANDLE;
     }
+
+    // Default destructor
     Pipeline::~Pipeline() {
         cleanup();
     }
 
-    int Pipeline::init(VkDevice& device, VkExtent2D swExtent) {
+    int Pipeline::init(VkDevice& device, Swapchain& swapchain) {
 
         this->device = device;
+
+        VkAttachmentDescription colorAttachment = {};                           // Structure specifies the attachment description
+        colorAttachment.format = swapchain.GetImageFormat();                    // Set colorAttachment format
+        colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;                        // Number of samples of the image
+        colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;                   // Set image color load operation behavior
+        colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;                 // Set image color store operation behavior
+        colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;        // Set image stencil load operation behavior
+        colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;      // Set image stencil store operation behavior
+        colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;              // Specify image layout before render pass begins
+        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;          // Specify image layout to transition to after render pass ends
+
+        VkAttachmentReference colorAttachmentRef = {};                              // Structure specifes the attachment reference
+        colorAttachmentRef.attachment = 0;                                          // Set attachment reference index
+        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;       // Set attachment layout
+
+        VkSubpassDescription subpass = {};                                  // Structure specifies subpass description
+        subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;        // Set pipeline type supported by pipeline
+        subpass.colorAttachmentCount = 1;                                   // Number of color attachments
+        subpass.pColorAttachments = &colorAttachmentRef;                    // Pointer to VkAttachmentRef defining subpasss color attachments
+
+        VkRenderPassCreateInfo renderpassInfo = {};                             // renderpassInfo specifies the parameters of the renderpass object
+        renderpassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;       // Identify renderpassInfo as structure type RENDER_PASS_CREATE_INFO
+        renderpassInfo.attachmentCount = 1;                                     // Number of attachments used by renderpass object
+        renderpassInfo.pAttachments = &colorAttachment;                         // Pointer to structures describing renderpass attachments
+        renderpassInfo.subpassCount = 1;                                        // Number of subpasses to create
+        renderpassInfo.pSubpasses = &subpass;                                   // Pointer to array of structures describing each subpass
+
+        if (vkCreateRenderPass(device, &renderpassInfo, nullptr, &renderPass) != VK_SUCCESS) {          // If renderpass creation fails
+            ASWL::utilities::Logger("P00R0", "Fatal Error: Render Pass creation failed.");              // then log the error
+            return 1;                                                                                   // and return the corresponding error value
+        }
 
         // Load Vertex Shader
         int vertShader = LoadShader(shaderMetadata.vertShaderPath, ShaderType::THE_FORGE_VK_SHADER_TYPE_VERTEX, ShaderLanguage::THE_FORGE_VK_SHADER_LANGUAGE_SPV);
@@ -33,8 +72,8 @@ namespace Forge {
 
         VkShaderModule vertShaderModule = VK_NULL_HANDLE;                                                   // Vertex Shader Module
         if (vkCreateShaderModule(device, &vertCreateInfo, nullptr, &vertShaderModule)) {                    // If vertex shader module creation fails
-            ASWL::utilities::Logger("P00S0", "Fatal Error: Failed to create vertex shader module.");        // then log the error
-            return 1;                                                                                       // and return the corresponding error value
+            ASWL::utilities::Logger("P01S0", "Fatal Error: Failed to create vertex shader module.");        // then log the error
+            return 2;                                                                                       // and return the corresponding error value
         }
 
         // Create Vertex Shader Pipeline
@@ -56,8 +95,8 @@ namespace Forge {
 
         VkShaderModule fragShaderModule = VK_NULL_HANDLE;                                                   // Fragment Shader Module
         if (vkCreateShaderModule(device, &fragCreateInfo, nullptr, &fragShaderModule)) {                    // If fragment shader module creation fails
-            ASWL::utilities::Logger("P01S1", "Fatal Error: Failed to create fragment shader module.");      // then log the error
-            return 2;                                                                                       // and return the corresponding error value
+            ASWL::utilities::Logger("P02S1", "Fatal Error: Failed to create fragment shader module.");      // then log the error
+            return 3;                                                                                       // and return the corresponding error value
         }
 
         // Create Fragment Shader Pipeline
@@ -81,19 +120,19 @@ namespace Forge {
         inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;                               // Define the type of primitive geometries that will be drawn from the vertices
         inputAssembly.primitiveRestartEnable = VK_FALSE;                                            // Determine whether a special vertex index value should restart the assembly of primitives.
 
-        VkViewport viewport = {};                                   // Structure containing viewport parameters
-        viewport.x = 0.0f;                                          // Set viewport upper left corner [LEFT]
-        viewport.y = 0.0f;                                          // Set viewport upper left corner [ UP ]
-        viewport.width = static_cast<float>(swExtent.width);        // Set viewport width
-        viewport.height = static_cast<float>(swExtent.height);      // Set viewport height
-        viewport.minDepth = 0.0f;                                   // Set viewport min depth
-        viewport.maxDepth = 1.0f;                                   // Set viewport max depth
+        VkViewport viewport = {};                                                   // Structure containing viewport parameters
+        viewport.x = 0.0f;                                                          // Set viewport upper left corner [LEFT]
+        viewport.y = 0.0f;                                                          // Set viewport upper left corner [ UP ]
+        viewport.width = static_cast<float>(swapchain.GetExtent().width);           // Set viewport width
+        viewport.height = static_cast<float>(swapchain.GetExtent().height);         // Set viewport height
+        viewport.minDepth = 0.0f;                                                   // Set viewport min depth
+        viewport.maxDepth = 1.0f;                                                   // Set viewport max depth
 
-        VkRect2D scissor = {};          // Create scissor rect to store pixel data
-        scissor.offset = { 0,0 };       // Set top left corner of scissor rect
-        scissor.extent = swExtent;      // Set size of scissor rect
+        VkRect2D scissor = {};                      // Create scissor rect to store pixel data
+        scissor.offset = { 0,0 };                   // Set top left corner of scissor rect
+        scissor.extent = swapchain.GetExtent();     // Set size of scissor rect
 
-        VkPipelineViewportStateCreateInfo viewportState = {};                               // viewportState specifies the parameters of the viewport
+        VkPipelineViewportStateCreateInfo viewportState = {};                               // viewportState specifies the parameters of the pipline viewport
         viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;        // Identify viewportState as structure type PIPELINE_VIEWPORT_STATE_CREATE_INFO
         viewportState.viewportCount = 1;                                                    // Number of viewports used by the pipeline
         viewportState.pViewports = &viewport;                                               // Pointer to viewport structure
@@ -114,7 +153,7 @@ namespace Forge {
         rasterizer.depthBiasClamp = 0.0f;                                                       // Maximum/minimum depth bias of a fragment
         rasterizer.depthBiasSlopeFactor = 0.0f;                                                 // Set scalar value to added to fragment slope depth bias calculations
 
-        VkPipelineMultisampleStateCreateInfo multisampling = {};                                // multisampling specifies the parameters of multisampling object
+        VkPipelineMultisampleStateCreateInfo multisampling = {};                                // multisampling specifies the parameters of pipeline multisampling object
         multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;         // Identify multisampling as structure type PIPELINE_MULTISAMPLE_STATE_CREATE_INFO
         multisampling.sampleShadingEnable = VK_FALSE;                                           // Set whether or not sample shading should be enabled
         multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;                             // Set number of samples used in rasterization
@@ -158,9 +197,54 @@ namespace Forge {
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;       // Identify pipelineLayoutInfo as structure type PIPELINE_LAYOUT_CREATE_INFO
 
         if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {      // If pipeline layout creation fails
-            ASWL::utilities::Logger("P0002", "Fatal Error: Failed to create pipeline layout.");                 // then log the error
-            return 3;                                                                                           // and return the corresponding error value
+            ASWL::utilities::Logger("P0003", "Fatal Error: Failed to create pipeline layout.");                 // then log the error
+            return 4;                                                                                           // and return the corresponding error value
         }
+
+        VkGraphicsPipelineCreateInfo pipelineInfo = {};                             // pipelineInfo specifies the parameters of the pipeline object
+        pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;       // Identify pipelineInfo as structure type GRAPHICS_PIPELINE_CREATE_INFO
+        pipelineInfo.stageCount = 2;                                                // Set pipeline stage count
+        pipelineInfo.pStages = shaderStages;                                        // Array of pipeline shader stages
+        pipelineInfo.pVertexInputState = &vertInputInfo;                            // Pointer to pipeline vertex input info
+        pipelineInfo.pInputAssemblyState = &inputAssembly;                          // Pointer to pipeline input assembly parameters
+        pipelineInfo.pViewportState = &viewportState;                               // Pointer to pipeline viewport parameters
+        pipelineInfo.pRasterizationState = &rasterizer;                             // Pointer to rasterizer
+        pipelineInfo.pMultisampleState = &multisampling;                            // Pointer to pipeline multisampler
+        pipelineInfo.pDepthStencilState = nullptr;                                  // Pointer to depth stencil state structure
+        pipelineInfo.pColorBlendState = &colorBlending;                             // Pointer to pipeline color blend state
+        pipelineInfo.pDynamicState = nullptr;                                       // Pointer to dynamic state structure parameters
+        pipelineInfo.layout = pipelineLayout;                                       // Set pipeline layout
+        pipelineInfo.renderPass = renderPass;                                       // Set pipeline render pass
+        pipelineInfo.subpass = 0;                                                   // Render pass subpass index
+        pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;                           // Optional
+        pipelineInfo.basePipelineIndex = -1;                                        // Optional
+
+        if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {        // If graphics pipeline creation fails
+            ASWL::utilities::Logger("P0004", "Fatal Error: Failed to create graphics pipeline.");                                   // then log the error
+            return 5;                                                                                                               // and return the corresponding error
+        }
+
+        swapchainFramebuffers.resize(swapchain.GetImageViews().size());         // Resize framebuffers list
+        for (size_t i = 0; i < swapchain.GetImageViews().size(); i++) {         // Iterate through every VkImageView objects
+
+            VkImageView attachments[] = { swapchain.GetImageViews()[i] };       // Create an array of VkImageView attachments
+
+            VkFramebufferCreateInfo framebufferInfo = {};                               // framebufferInfo specifies the parameters of the framebuffer object
+            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;          // Identify framebufferInfo as structure type FRAMEBUFFER_CREATE_INFO
+            framebufferInfo.renderPass = renderPass;                                    // Set render pass
+            framebufferInfo.attachmentCount = 1;                                        // Number of attachments per framebuffer
+            framebufferInfo.pAttachments = attachments;                                 // Pointer to array attachments
+            framebufferInfo.width = swapchain.GetExtent().width;                        // Set framebuffer width
+            framebufferInfo.height = swapchain.GetExtent().height;                      // Set framebuffer height
+            framebufferInfo.layers = 1;                                                 // Set framebuffer layer count
+
+            if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapchainFramebuffers[i]) != VK_SUCCESS) {                      // If framebuffer creation fails at index
+                std::string msg = "Fatal Error: Failed to create swapchain framebuffer at index [" + std::to_string(i)+ "].";           //
+                ASWL::utilities::Logger("P05F0", msg);                                                                                  // then log the error
+                return 6;                                                                                                               // and return the corresponding error
+            }
+        }
+
 
         vkDestroyShaderModule(device, vertShaderModule, nullptr);
         vkDestroyShaderModule(device, fragShaderModule, nullptr);
@@ -176,10 +260,10 @@ namespace Forge {
 
             std::ifstream shader(path, std::ios::ate | std::ios::binary);       // Open shader file in binary mode, and start reading from EOF
 
-            if (!shader.is_open()) {                                                                    // If opening shader file fails
-                std::string temp = "Fatal Error: Failed to load shader from [" + path + "].";           //
-                ASWL::utilities::Logger("P03S2", temp);                                                 // log the error
-                return 4;                                                                               // and end loading process
+            if (!shader.is_open()) {                                                                // If opening shader file fails
+                std::string msg = "Fatal Error: Failed to load shader from [" + path + "].";        //
+                ASWL::utilities::Logger("P06S2", msg);                                              // then log the error
+                return 7;                                                                           // and return the corresponding error
             }
 
             size_t fileSize = (size_t)shader.tellg();       // Get input position associated with streambuf object
@@ -198,12 +282,18 @@ namespace Forge {
             return 0;
         }
         else {
-            ASWL::utilities::Logger("P04S3", "Fatal Error: Only SPIR-V is currently supported.");       // log the error
-            return 5;                                                                                   // and end loading process
+            ASWL::utilities::Logger("P07S3", "Fatal Error: Only SPIR-V is currently supported.");       // log the error
+            return 8;                                                                                   // and end loading process
         }
     }
 
     void Pipeline::cleanup() {
-        vkDestroyPipelineLayout(device, pipelineLayout);
+        
+        vkDestroyPipeline(device, graphicsPipeline, nullptr);
+        vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+        vkDestroyRenderPass(device, renderPass, nullptr);
+
+        for (auto framebuffer : swapchainFramebuffers)
+            vkDestroyFramebuffer(device, framebuffer, nullptr);
     }
 }
