@@ -63,7 +63,7 @@ namespace Forge {    // Wrapper namespace
 
         std::vector<const char*> GetRequiredExtensions();       // Returns extensions required by application including GLFW
 
-        // Validation Layer stuff
+        // *** Validation Layer stuff *********************************************************************************************************************************************
         bool AllValidationLayersSupported();            // Check if all validation layers are supported
         VkDebugUtilsMessengerEXT dbgMessenger;          // Debug Callback handler
 
@@ -88,6 +88,7 @@ namespace Forge {    // Wrapper namespace
                                                             VkDebugUtilsMessageTypeFlagsEXT msgType,                        // Type of report
                                                             const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,      // Pointer to struct containing report details
                                                             void* pUsrData);                                                // Pointer to struct allowing user to pass data
+        // *** End validation layer stuff *****************************************************************************************************************************************
     };
 }
 

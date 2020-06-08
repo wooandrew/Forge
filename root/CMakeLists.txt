@@ -14,9 +14,9 @@ add_library(libforge SHARED
     "include/physical_devices.hpp"      "src/physical_devices.cpp"
     "include/logical_devices.hpp"       "src/logical_devices.cpp"
     "include/swapchain.hpp"             "src/swapchain.cpp"
-    "include/pipeline.hpp"              "src/pipeline.cpp"
-                
-)
+    "include/pipeline.hpp"              "src/pipeline.cpp"              
+    "include/command_buffers.hpp"       "src/command_buffers.cpp"
+ )
 
 include(GenerateExportHeader)
 generate_export_header(libforge)

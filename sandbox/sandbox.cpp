@@ -63,6 +63,11 @@ int main() {
         CLOG("pipeline", ret);
         return ret;
     }
+    ret += spc.initFramebuffers(pipeline.GetRenderPass());
+    if (ret != 0) {
+        CLOG("swapchain framebuffers", ret);
+        return ret;
+    }
 
     uint32_t extensionCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);

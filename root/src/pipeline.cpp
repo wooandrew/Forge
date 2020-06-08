@@ -224,28 +224,6 @@ namespace Forge {
             return 5;                                                                                                               // and return the corresponding error
         }
 
-        swapchainFramebuffers.resize(swapchain.GetImageViews().size());         // Resize framebuffers list
-        for (size_t i = 0; i < swapchain.GetImageViews().size(); i++) {         // Iterate through every VkImageView objects
-
-            VkImageView attachments[] = { swapchain.GetImageViews()[i] };       // Create an array of VkImageView attachments
-
-            VkFramebufferCreateInfo framebufferInfo = {};                               // framebufferInfo specifies the parameters of the framebuffer object
-            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;          // Identify framebufferInfo as structure type FRAMEBUFFER_CREATE_INFO
-            framebufferInfo.renderPass = renderPass;                                    // Set render pass
-            framebufferInfo.attachmentCount = 1;                                        // Number of attachments per framebuffer
-            framebufferInfo.pAttachments = attachments;                                 // Pointer to array attachments
-            framebufferInfo.width = swapchain.GetExtent().width;                        // Set framebuffer width
-            framebufferInfo.height = swapchain.GetExtent().height;                      // Set framebuffer height
-            framebufferInfo.layers = 1;                                                 // Set framebuffer layer count
-
-            if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapchainFramebuffers[i]) != VK_SUCCESS) {                      // If framebuffer creation fails at index
-                std::string msg = "Fatal Error: Failed to create swapchain framebuffer at index [" + std::to_string(i)+ "].";           //
-                ASWL::utilities::Logger("P05F0", msg);                                                                                  // then log the error
-                return 6;                                                                                                               // and return the corresponding error
-            }
-        }
-
-
         vkDestroyShaderModule(device, vertShaderModule, nullptr);
         vkDestroyShaderModule(device, fragShaderModule, nullptr);
 
@@ -262,8 +240,8 @@ namespace Forge {
 
             if (!shader.is_open()) {                                                                // If opening shader file fails
                 std::string msg = "Fatal Error: Failed to load shader from [" + path + "].";        //
-                ASWL::utilities::Logger("P06S2", msg);                                              // then log the error
-                return 7;                                                                           // and return the corresponding error
+                ASWL::utilities::Logger("P05S2", msg);                                              // then log the error
+                return 6;                                                                           // and return the corresponding error
             }
 
             size_t fileSize = (size_t)shader.tellg();       // Get input position associated with streambuf object
@@ -282,9 +260,14 @@ namespace Forge {
             return 0;
         }
         else {
-            ASWL::utilities::Logger("P07S3", "Fatal Error: Only SPIR-V is currently supported.");       // log the error
-            return 8;                                                                                   // and end loading process
+            ASWL::utilities::Logger("P06S3", "Fatal Error: Only SPIR-V is currently supported.");       // log the error
+            return 7;                                                                                   // and end loading process
         }
+    }
+
+    // Returns renderpass object on request
+    VkRenderPass& Pipeline::GetRenderPass() {
+        return renderPass;
     }
 
     void Pipeline::cleanup() {
@@ -292,8 +275,5 @@ namespace Forge {
         vkDestroyPipeline(device, graphicsPipeline, nullptr);
         vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
         vkDestroyRenderPass(device, renderPass, nullptr);
-
-        for (auto framebuffer : swapchainFramebuffers)
-            vkDestroyFramebuffer(device, framebuffer, nullptr);
     }
 }

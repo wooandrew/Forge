@@ -190,12 +190,41 @@ namespace Forge {
         return 0;
     }
 
+    int Swapchain::initFramebuffers(VkRenderPass& renderpass) {
+
+        swapchainFramebuffers.resize(swapchainImageViews.size());       // Resize framebuffers list
+        for (size_t i = 0; i < swapchainImageViews.size(); i++) {       // Iterate through every VkImageView objects
+
+            VkImageView attachments[] = { swapchainImageViews[i] };       // Create an array of VkImageView attachments
+
+            VkFramebufferCreateInfo framebufferInfo = {};                               // framebufferInfo specifies the parameters of the framebuffer object
+            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;          // Identify framebufferInfo as structure type FRAMEBUFFER_CREATE_INFO
+            framebufferInfo.renderPass = renderpass;                                    // Set render pass
+            framebufferInfo.attachmentCount = 1;                                        // Number of attachments per framebuffer
+            framebufferInfo.pAttachments = attachments;                                 // Pointer to array attachments
+            framebufferInfo.width = swapchainExtent.width;                              // Set framebuffer width
+            framebufferInfo.height = swapchainExtent.height;                            // Set framebuffer height
+            framebufferInfo.layers = 1;                                                 // Set framebuffer layer count
+
+            if (vkCreateFramebuffer(logicaldevice, &framebufferInfo, nullptr, &swapchainFramebuffers[i]) != VK_SUCCESS) {               // If framebuffer creation fails at index
+                std::string msg = "Fatal Error: Failed to create swapchain framebuffer at index [" + std::to_string(i) + "].";          //
+                ASWL::utilities::Logger("S02F0", msg);                                                                                  // then log the error
+                return 3;                                                                                                               // and return the corresponding error
+            }
+        }
+
+        return 0;
+    }
+
     void Swapchain::cleanup() {
 
         vkDestroySwapchainKHR(logicaldevice, swapchain, nullptr);
 
         for (auto imageview : swapchainImageViews)
             vkDestroyImageView(logicaldevice, imageview, nullptr);
+
+        for (auto framebuffer : swapchainFramebuffers)
+            vkDestroyFramebuffer(logicaldevice, framebuffer, nullptr);
     }
 
     // Returns swapchain extent on request
@@ -209,5 +238,10 @@ namespace Forge {
     // Returns swapchaim image views on request
     const std::vector<VkImageView> Swapchain::GetImageViews() {
         return swapchainImageViews;
+    }
+
+    // Returns framebuffers on request
+    std::vector<VkFramebuffer> Swapchain::GetFramebuffers() {
+        return swapchainFramebuffers;
     }
 }

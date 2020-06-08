@@ -45,14 +45,14 @@ namespace Forge {
             std::string fragShaderPath = "Assets/frag.spv";         // Path to fragment shader
         }; ShaderMetadata shaderMetadata;
 
+        VkRenderPass& GetRenderPass();      // Returns renderpass object
+
     private:
 
         std::vector<char> vert;         // Vertex shader buffer
         std::vector<char> frag;         // Fragment shader buffer
 
         VkDevice device;        // Handle to virtual device
-
-        std::vector<VkFramebuffer> swapchainFramebuffers;       // List of handles to swapchain framebuffers
 
         VkPipelineLayout pipelineLayout;        // Handle to pipeline layout object
         VkRenderPass renderPass;                // Handle to renderpass object

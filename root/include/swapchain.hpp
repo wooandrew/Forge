@@ -35,20 +35,23 @@ namespace Forge {
         ~Swapchain();       // Default destructor
 
         int init(VkPhysicalDevice& graphicscard, VkSurfaceKHR& surface, VkDevice& logicaldevice);       // Initialize swapchain
+        int initFramebuffers(VkRenderPass& renderpass);
         void cleanup();
 
-        VkExtent2D GetExtent();         // Returns swapchain extent
-        VkFormat GetImageFormat();      // Returns swapchain image format
-        const std::vector<VkImageView> GetImageViews();     // Returns swapchaim image views
+        VkExtent2D GetExtent();                                 // Returns swapchain extent
+        VkFormat GetImageFormat();                              // Returns swapchain image format
+        const std::vector<VkImageView> GetImageViews();         // Returns swapchain image views
+        std::vector<VkFramebuffer> GetFramebuffers();           // Returns swapchain framebuffers
 
     private:
 
         VkSwapchainKHR swapchain;                   // Handle to swapchain object
-        std::vector<VkImage> swapchainImages;       // List of handles to image objects
         VkFormat swapchainImageFormat;              // Swapchain image format
         VkExtent2D swapchainExtent;                 // 2D array containing swapchain extent
 
-        std::vector<VkImageView> swapchainImageViews;       // List of handles to image view object
+        std::vector<VkImage> swapchainImages;                   // List of handles to image objects
+        std::vector<VkImageView> swapchainImageViews;           // List of handles to image view object
+        std::vector<VkFramebuffer> swapchainFramebuffers;       // List of handles to swapchain framebuffers
 
         VkDevice logicaldevice;         // Handle to Logical device
     };
