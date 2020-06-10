@@ -22,7 +22,6 @@ namespace Forge {
 
     // Default destructor
     Pipeline::~Pipeline() {
-        cleanup();
     }
 
     int Pipeline::init(VkDevice& device, Swapchain& swapchain) {
@@ -268,6 +267,9 @@ namespace Forge {
     // Returns renderpass object on request
     VkRenderPass& Pipeline::GetRenderPass() {
         return renderPass;
+    }
+    VkPipeline& Pipeline::GetGraphicsPipeline() {
+        return graphicsPipeline;
     }
 
     void Pipeline::cleanup() {

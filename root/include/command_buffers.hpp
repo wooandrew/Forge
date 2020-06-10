@@ -22,6 +22,8 @@ namespace Forge {
 
     public:
 
+        friend class Engine;
+
         CommandBuffers();       // Default constructor
         ~CommandBuffers();      // Default destructor
 

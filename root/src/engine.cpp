@@ -76,7 +76,7 @@ namespace Forge {
         createInfo.pApplicationInfo = &appInfo;                         // Pass appInfo as reference
 
         auto extensions = GetRequiredExtensions();                                          // Get required extensions
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());        // Set extensions count
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());        // Number of enabled extensions
         createInfo.ppEnabledExtensionNames = extensions.data();                             // Set extensions
 
         if (DEBUG_MODE) {   // If DEBUG_MODE is enabled
@@ -106,6 +106,25 @@ namespace Forge {
             return 5;                                                                               // and return corresponding error value
         }
 
+        int ret = graphics_card.autochoose(instance, surface);
+        if (ret != 0)
+            return ret;
+        ret = logical_graphics_card.init(graphics_card.PhysicalDevice, surface);
+        if (ret != 0)
+            return ret;
+        ret = swapchain.init(graphics_card.PhysicalDevice, surface, logical_graphics_card.device);
+        if (ret != 0)
+            return ret;
+        ret = pipeline.init(logical_graphics_card.device, swapchain);
+        if (ret != 0)
+            return ret;
+        ret = swapchain.initFramebuffers(pipeline.renderPass);
+        if (ret != 0)
+            return ret;
+        ret = command_buffers.init(graphics_card.PhysicalDevice, logical_graphics_card.device, surface, swapchain, pipeline);
+        if (ret != 0)
+            return ret;
+
         return 0;
     }
 
@@ -117,6 +136,11 @@ namespace Forge {
     // Cleanup Engine -> Vulkan/GLFW
     void Engine::cleanup() {
 
+        command_buffers.cleanup();
+        pipeline.cleanup();
+        swapchain.cleanup();
+        logical_graphics_card.cleanup();
+
         vkDestroySurfaceKHR(instance, surface, nullptr);        // Destroy Vulkan surface
 
         if (DEBUG_MODE)                                                             // If DEBUG_MODE is enabled
@@ -124,7 +148,7 @@ namespace Forge {
 
         vkDestroyInstance(instance, nullptr);       // Destroy Vulkan instance
 
-        glfwDestroyWindow(window);      // destroy window
+        glfwDestroyWindow(window);      // Destroy window
         glfwTerminate();                // then terminate GLFW
     }
 
@@ -181,7 +205,7 @@ namespace Forge {
     void Engine::SetupDebugMessenger() {
 
         if (!DEBUG_MODE)        // If DEBUG_MODE is disabled
-            return;             // then do not setup
+            return;             // then do not setup debug messenger
 
         VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;     // Struct containing data for debug messenger object
         PopulateDebugMessengerCreateInfo(debugCreateInfo);      // Populate the struct
@@ -215,14 +239,15 @@ namespace Forge {
                                                          const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,         // Pointer to struct containing report details
                                                          void* pUsrData)                                                    // Pointer to struct allowing user to pass data
     {
-        ASWL::utilities::Logger(std::string("E06V4"), std::string("Error: Validation Layer -> "), std::string(pCallbackData->pMessage));        // Log the error
+        std::string msg = "Error: Validation Layer -> " + std::string(pCallbackData->pMessage);
+        ASWL::utilities::Logger("E06V4", msg);      // Log the error
         return VK_FALSE;
     }
 
     // Populates debugCreateInfo
     void Engine::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& debugCreateInfo) {
         
-        debugCreateInfo = {};                                                                   // Empty debugCreateInfo
+        debugCreateInfo = {};                                                                   // debugCreateInfo specifies the parameters of the debug messenger
         debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;        // Identify debugCreateInfo as structure type DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT
         debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT       // Set callback filter -> VERBOSE
                                         | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT       // Set callback filter -> WARNING

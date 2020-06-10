@@ -93,7 +93,6 @@ namespace Forge {
 
     // Default destructor
     Swapchain::~Swapchain() {
-        cleanup();
     }
 
     // Initialize swapchain

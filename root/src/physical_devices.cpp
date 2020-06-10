@@ -18,7 +18,6 @@ namespace Forge {
     }
     // Default destructor
     GraphicsCard::~GraphicsCard() {
-
     }
 
     // Automatically chooses an appropriate graphics card

@@ -17,6 +17,11 @@
 
 // TheForge includes
 #include "forge_vars.hpp"
+#include "physical_devices.hpp"
+#include "logical_devices.hpp"
+#include "swapchain.hpp"
+#include "pipeline.hpp"
+#include "command_buffers.hpp"
 
 namespace Forge {    // Wrapper namespace
 
@@ -63,7 +68,14 @@ namespace Forge {    // Wrapper namespace
 
         std::vector<const char*> GetRequiredExtensions();       // Returns extensions required by application including GLFW
 
-        // *** Validation Layer stuff *********************************************************************************************************************************************
+        GraphicsCard graphics_card;                         // Physical graphics card object
+        LogicalGraphicsCard logical_graphics_card;          // Logical graphics card object
+        Swapchain swapchain;                                // Swapchain object
+        Pipeline pipeline;                                  // Pipeline object
+        CommandBuffers command_buffers;                     // Command buffer objects
+
+
+        // *** Start Validation Layer stuff ***************************************************************************************************************************************
         bool AllValidationLayersSupported();            // Check if all validation layers are supported
         VkDebugUtilsMessengerEXT dbgMessenger;          // Debug Callback handler
 

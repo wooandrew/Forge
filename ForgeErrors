@@ -26,3 +26,4 @@
 1   "CB0P0", "Fatal Error: Failed to create command pool."
 2   "CB001", "Fatal Error: Failed to allocate command buffers."
 3   "CB002", "Fatal Error: Failed to begin command buffer at index [" + std::to_string(i) + "]."
+4   "CB003", "Fatal Error: Failed to end command buffer at index [" + std::to_string(i) + "]."

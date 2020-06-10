@@ -17,7 +17,6 @@ namespace Forge {
     }
     // Default destructor
     CommandBuffers::~CommandBuffers() {
-
     }
 
     // Initialize command buffers
@@ -61,7 +60,7 @@ namespace Forge {
                 return 3;                                                                                                       // and return the corresponding value
             }
 
-            VkRenderPassBeginInfo renderpassBeginInfo = {};                             // renderpassBeginInfo specifies the parameters of the renderpass begin operation
+            VkRenderPassBeginInfo renderpassBeginInfo = {};                             // renderpassBeginInfo specifies the parameters of the render pass begin operation
             renderpassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;       // Identify renderpassBeginInfo as structure type RENDER_PASS_BEGIN_INFO
             renderpassBeginInfo.renderPass = pipeline.GetRenderPass();                  // Set renderpass
             renderpassBeginInfo.framebuffer = swapchain.GetFramebuffers()[i];           // Set framebuffer
@@ -71,9 +70,18 @@ namespace Forge {
             VkClearValue clearCanvasColor = { 0.f, 0.f, 0.f, 0.f };         // Set render canvas clearing color
             renderpassBeginInfo.clearValueCount = 1;                        // Number of elements in pClearValue
             renderpassBeginInfo.pClearValues = &clearCanvasColor;           // List of canvas clear values
+
+            vkCmdBeginRenderPass(command_buffers[i], &renderpassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);                     // Start a new render pass
+            vkCmdBindPipeline(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.GetGraphicsPipeline());         // Bind pipeline object to command buffer
+            vkCmdDraw(command_buffers[i], 3, 1, 0, 0);                                                                      // Draw primitive
+            vkCmdEndRenderPass(command_buffers[i]);                                                                         // End render pass
+
+            if (vkEndCommandBuffer(command_buffers[i]) != VK_SUCCESS) {                                                     // If ending command buffer fails
+                std::string msg = "Fatal Error: Failed to end command buffer at index [" + std::to_string(i) + "].";        // 
+                ASWL::utilities::Logger("CB003", msg);                                                                      // then log the error
+                return 4;                                                                                                   // and return the corresponding value
+            }
         }
-
-
 
         return 0;
     }

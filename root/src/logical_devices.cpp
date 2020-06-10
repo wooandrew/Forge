@@ -21,7 +21,6 @@ namespace Forge {
 
     // Default destructor
     LogicalGraphicsCard::~LogicalGraphicsCard() {
-        cleanup();
     }
 
 

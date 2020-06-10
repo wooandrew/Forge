@@ -18,6 +18,8 @@ namespace Forge {
 
     public:
 
+        friend class Engine;
+
         LogicalGraphicsCard();          // Default constructor
         ~LogicalGraphicsCard();         // Default destructor
 

@@ -30,6 +30,8 @@ namespace Forge {
 
     public:
 
+        friend class Engine;
+
         Pipeline();       // Default constructor
         ~Pipeline();      // Default destructor
 
@@ -45,7 +47,8 @@ namespace Forge {
             std::string fragShaderPath = "Assets/frag.spv";         // Path to fragment shader
         }; ShaderMetadata shaderMetadata;
 
-        VkRenderPass& GetRenderPass();      // Returns renderpass object
+        VkRenderPass& GetRenderPass();          // Returns renderpass object
+        VkPipeline& GetGraphicsPipeline();      // Returns pipeline object -> graphics
 
     private:
 
