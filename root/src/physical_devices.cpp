@@ -14,7 +14,7 @@ namespace Forge {
 
     // Default constructor
     GraphicsCard::GraphicsCard() {
-        PhysicalDevice = VK_NULL_HANDLE;
+        device = VK_NULL_HANDLE;
     }
     // Default destructor
     GraphicsCard::~GraphicsCard() {
@@ -24,7 +24,7 @@ namespace Forge {
     int GraphicsCard::autochoose(VkInstance& instance, VkSurfaceKHR& surface) {
         
         int graphicsCardFound = SelectGraphicsCard(instance, surface);
-        bool graphicsCardSupported = CheckDeviceSupport(PhysicalDevice, surface);
+        bool graphicsCardSupported = CheckDeviceSupport(device, surface);
 
         if (graphicsCardFound == 0 || !graphicsCardSupported)           // If a graphics card is not found or the graphics card is not supported
             return graphicsCardFound & (int)graphicsCardSupported;      // Return the error as a combination of both errors
@@ -47,15 +47,15 @@ namespace Forge {
         vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());         // Then push supported devices into list
 
         // Iterate through all supported devices
-        for (VkPhysicalDevice& device : devices) {
+        for (VkPhysicalDevice& _device : devices) {
 
-            if (CheckDeviceSupport(device, surface)) {      // If the device supports Vulkan operations
-                PhysicalDevice = device;                    // Set the selected graphics card to that device
+            if (CheckDeviceSupport(_device, surface)) {     // If the device supports Vulkan operations
+                device = _device;                           // Set the selected graphics card to that device
                 break;                                      // then break out of the loop
             }
         }
 
-        if (PhysicalDevice == VK_NULL_HANDLE) {                                                                                 // If the GPU is null
+        if (device == VK_NULL_HANDLE) {                                                                                         // If the GPU is null
             ASWL::utilities::Logger("P01G1", "Fatal Error: Failed to find GPU that supports required Vulkan operation.");       // then log the error
             return 2;                                                                                                           // and return the error
         }
@@ -101,8 +101,8 @@ namespace Forge {
         return requiredExtensions.empty();
     }
 
-    // Returns the handle to the graphics card
+    // Returns the handle to the graphics card on request
     VkPhysicalDevice& GraphicsCard::GetGraphicsCard() {
-        return PhysicalDevice;
+        return device;
     }
 }

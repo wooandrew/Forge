@@ -87,8 +87,8 @@ namespace Forge {
     Swapchain::Swapchain() {
 
         swapchain = VK_NULL_HANDLE;
-        swapchainImageFormat = VK_FORMAT_UNDEFINED;
-        swapchainExtent = { 1000, 600 };
+        ImageFormat = VK_FORMAT_UNDEFINED;
+        extent = { 1000, 600 };
     }
 
     // Default destructor
@@ -96,15 +96,15 @@ namespace Forge {
     }
 
     // Initialize swapchain
-    int Swapchain::init(VkPhysicalDevice& graphicscard, VkSurfaceKHR& surface, VkDevice& logicaldevice) {
+    int Swapchain::init(VkPhysicalDevice& graphicscard, VkSurfaceKHR& surface, VkDevice& _device) {
 
-        this->logicaldevice = logicaldevice;        // Logical device
+        this->device = _device;         // Logical device
 
         SwapChainSupportDetails swapchainSupport = QuerySwapChainSupport(graphicscard, surface);          // Get swapchain properties
 
         VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapchainSupport.formats);       // Get surface format
         VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapchainSupport.presentModes);        // Get surface present mode
-        VkExtent2D extent = ChooseSwapExtent(swapchainSupport.capabilities);                        // Get surface extent
+        VkExtent2D _extent = ChooseSwapExtent(swapchainSupport.capabilities);                       // Get surface extent
 
         // Request one more image than minimum to avoid bottleneck
         uint32_t imageCount = swapchainSupport.capabilities.minImageCount + 1;
@@ -119,7 +119,7 @@ namespace Forge {
         createInfo.minImageCount = imageCount;                                  // Set the minimum image count
         createInfo.imageFormat = surfaceFormat.format;                          // Set image format to same format as surface
         createInfo.imageColorSpace = surfaceFormat.colorSpace;                  // Set image color space
-        createInfo.imageExtent = extent;                                        // Set swapchain extent
+        createInfo.imageExtent = _extent;                                       // Set swapchain extent
         createInfo.imageArrayLayers = 1;                                        // Number of views in a multiview surface
         createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;            // Swapchain intended use
 
@@ -143,29 +143,29 @@ namespace Forge {
         createInfo.clipped = VK_TRUE;                                                   // Set whether or not to clip hidden pixels
         createInfo.oldSwapchain = VK_NULL_HANDLE;                                       // Invalidated/unoptimized swapchains
 
-        if (vkCreateSwapchainKHR(logicaldevice, &createInfo, nullptr, &swapchain) != VK_SUCCESS) {      // If vkSwapchain creation fails
-            ASWL::utilities::Logger("S0000", "Fatal Error: Failed to create swapchain.");               // then log the error
-            return 1;                                                                                   // and return the corresponding error value
+        if (vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapchain) != VK_SUCCESS) {         // If vkSwapchain creation fails
+            ASWL::utilities::Logger("S0000", "Fatal Error: Failed to create swapchain.");           // then log the error
+            return 1;                                                                               // and return the corresponding error value
         }
 
-        vkGetSwapchainImagesKHR(logicaldevice, swapchain, &imageCount, nullptr);                        // Get number of images in swapchain
-        swapchainImages.resize(imageCount);                                                             // Resize swapchain images list to fit
-        vkGetSwapchainImagesKHR(logicaldevice, swapchain, &imageCount, swapchainImages.data());         // Fill swapchain images list
+        vkGetSwapchainImagesKHR(device, swapchain, &imageCount, nullptr);               // Get number of images in swapchain
+        images.resize(imageCount);                                                      // Resize swapchain images list to fit
+        vkGetSwapchainImagesKHR(device, swapchain, &imageCount, images.data());         // Fill swapchain images list
 
-        swapchainImageFormat = surfaceFormat.format;        // Set image format to equal surface format
-        swapchainExtent = extent;                           // Set swapchain extent
+        ImageFormat = surfaceFormat.format;         // Set image format to equal surface format
+        extent = _extent;                           // Set swapchain extent
 
-        swapchainImageViews.resize(swapchainImages.size());     // Set image views list size to equal the number of images in swapchain
+        ImageViews.resize(images.size());           // Set image views list size to equal the number of images in swapchain
         
         // Iterate through every image in swapchain images
-        for (int i = 0; i < swapchainImages.size(); i++) {
+        for (int i = 0; i < images.size(); i++) {
 
             // Create an image view object for each image
             VkImageViewCreateInfo createImageViewInfo = {};                                     // createImageViewInfo specifies the parameters of the image view object
             createImageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;               // Identify createImageViewInfo as structure type IMAGE_VIEW_CREATE_INFO
-            createImageViewInfo.image = swapchainImages[i];                                     // Set the VkImage on which the image will be created
+            createImageViewInfo.image = images[i];                                              // Set the VkImage on which the image will be created
             createImageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;                               // Set the image view type
-            createImageViewInfo.format = swapchainImageFormat;                                  // Set the image view format
+            createImageViewInfo.format = ImageFormat;                                           // Set the image view format
 
             // Specify how to swizzle/map color
             createImageViewInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;                   // Specify how component r should be swizzled (red)
@@ -180,9 +180,9 @@ namespace Forge {
             createImageViewInfo.subresourceRange.baseArrayLayer = 0;                            // First array level accessible to the view
             createImageViewInfo.subresourceRange.layerCount = 1;                                // Number of array levels accessible to the view
 
-            if (vkCreateImageView(logicaldevice, &createImageViewInfo, nullptr, &swapchainImageViews[i]) != VK_SUCCESS) {       // If image view creation fails
-                ASWL::utilities::Logger("S0001", "Fatal Error: Failed to create Image View.");                                  // then log the error
-                return 2;                                                                                                       // and return the corresponding error value
+            if (vkCreateImageView(device, &createImageViewInfo, nullptr, &ImageViews[i]) != VK_SUCCESS) {       // If image view creation fails
+                ASWL::utilities::Logger("S0001", "Fatal Error: Failed to create Image View.");                  // then log the error
+                return 2;                                                                                       // and return the corresponding error value
             }
         }
 
@@ -191,21 +191,21 @@ namespace Forge {
 
     int Swapchain::initFramebuffers(VkRenderPass& renderpass) {
 
-        swapchainFramebuffers.resize(swapchainImageViews.size());       // Resize framebuffers list
-        for (size_t i = 0; i < swapchainImageViews.size(); i++) {       // Iterate through every VkImageView objects
+        framebuffers.resize(ImageViews.size());                 // Resize framebuffers list
+        for (size_t i = 0; i < ImageViews.size(); i++) {        // Iterate through every VkImageView objects
 
-            VkImageView attachments[] = { swapchainImageViews[i] };       // Create an array of VkImageView attachments
+            VkImageView attachments[] = { ImageViews[i] };      // Create an array of VkImageView attachments
 
             VkFramebufferCreateInfo framebufferInfo = {};                               // framebufferInfo specifies the parameters of the framebuffer object
             framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;          // Identify framebufferInfo as structure type FRAMEBUFFER_CREATE_INFO
             framebufferInfo.renderPass = renderpass;                                    // Set render pass
             framebufferInfo.attachmentCount = 1;                                        // Number of attachments per framebuffer
             framebufferInfo.pAttachments = attachments;                                 // Pointer to array attachments
-            framebufferInfo.width = swapchainExtent.width;                              // Set framebuffer width
-            framebufferInfo.height = swapchainExtent.height;                            // Set framebuffer height
+            framebufferInfo.width = extent.width;                                       // Set framebuffer width
+            framebufferInfo.height = extent.height;                                     // Set framebuffer height
             framebufferInfo.layers = 1;                                                 // Set framebuffer layer count
 
-            if (vkCreateFramebuffer(logicaldevice, &framebufferInfo, nullptr, &swapchainFramebuffers[i]) != VK_SUCCESS) {               // If framebuffer creation fails at index
+            if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) {                               // If framebuffer creation fails at index
                 std::string msg = "Fatal Error: Failed to create swapchain framebuffer at index [" + std::to_string(i) + "].";          //
                 ASWL::utilities::Logger("S02F0", msg);                                                                                  // then log the error
                 return 3;                                                                                                               // and return the corresponding error
@@ -217,30 +217,29 @@ namespace Forge {
 
     void Swapchain::cleanup() {
 
-        vkDestroySwapchainKHR(logicaldevice, swapchain, nullptr);
+        vkDestroySwapchainKHR(device, swapchain, nullptr);
 
-        for (auto imageview : swapchainImageViews)
-            vkDestroyImageView(logicaldevice, imageview, nullptr);
+        for (auto imageview : ImageViews)
+            vkDestroyImageView(device, imageview, nullptr);
 
-        for (auto framebuffer : swapchainFramebuffers)
-            vkDestroyFramebuffer(logicaldevice, framebuffer, nullptr);
+        for (auto framebuffer : framebuffers)
+            vkDestroyFramebuffer(device, framebuffer, nullptr);
     }
 
     // Returns swapchain extent on request
-    VkExtent2D Swapchain::GetExtent() {
-        return swapchainExtent;
+    VkExtent2D& Swapchain::GetExtent() {
+        return extent;
     }
     // Returns swapchain image format on request
-    VkFormat Swapchain::GetImageFormat() {
-        return swapchainImageFormat;
+    VkFormat& Swapchain::GetImageFormat() {
+        return ImageFormat;
     }
     // Returns swapchaim image views on request
     const std::vector<VkImageView> Swapchain::GetImageViews() {
-        return swapchainImageViews;
+        return ImageViews;
     }
-
     // Returns framebuffers on request
     std::vector<VkFramebuffer> Swapchain::GetFramebuffers() {
-        return swapchainFramebuffers;
+        return framebuffers;
     }
 }

@@ -14,19 +14,23 @@
 
 namespace Forge {
 
-    class LogicalGraphicsCard {
+    class LogicalDevice {
 
     public:
 
         friend class Engine;
 
-        LogicalGraphicsCard();          // Default constructor
-        ~LogicalGraphicsCard();         // Default destructor
+        LogicalDevice();        // Default constructor
+        ~LogicalDevice();       // Default destructor
 
-        int init(VkPhysicalDevice physicalDevice, VkSurfaceKHR& surface);       // Initalize logical device
-        void cleanup();                                                         // Cleanup logical device
+        int init(VkPhysicalDevice physicalDevice, VkSurfaceKHR& surface);       // Initalize LogicalDevice object
+        void cleanup();                                                         // Cleanup LogicalDevice object
 
-        VkDevice& GetDevice();      // Returns logical device -> graphics card
+        VkDevice& GetDevice();      // Returns logical device object
+
+        enum class DeviceType {     // Describes the type of logical device. Must be set before the object is initialized
+            GraphicsCard
+        }; DeviceType type;
 
     private:
         VkDevice device;            // Handle to logical device

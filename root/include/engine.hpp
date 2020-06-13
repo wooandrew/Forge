@@ -32,12 +32,10 @@ namespace Forge {    // Wrapper namespace
         Engine();               // Default constructor
         ~Engine();              // Default destructor
 
-        int init();             // Initialize the engine. This function must be called before the engine is used.
+        struct Metadata {       // This struct contains the metadata for the engine/glfwWindow. The data inside should be set BEFORE the engine is initialized.
 
-        void update();          // Update the engine. This function should be called every iteration.
-        void cleanup();         // Cleanup Engine, Vulkan, and GLFW
-
-        struct MetaData {       // This struct contains the metadata for the engine/glfwWindow. The data inside should be set BEFORE the engine is initialized.
+            // Engine metadata
+            bool autoinit{ true };     // Automatically initialize engine components
 
             // Vulkan initialization metadata
             const char* vkAppName{ "vkForgeDefault" };      // VkApp app name
@@ -50,7 +48,13 @@ namespace Forge {    // Wrapper namespace
             const char* windowTitle{ "vkForgeDefault" };                                                                // Window title
             ASWL::utilities::Dimensions2D<int> windowDimensions{ ASWL::utilities::make_2d_dimension(1000, 600) };       // Window dimensions (x, y)
 
-        }; MetaData metadata;
+        }; Metadata metadata;
+
+        int init();             // Initialize the engine. This function must be called before the engine is used.
+        int initVulkan();       // Initialize Vulkan components of the engine. If metadata.autoinit is disabled, Vulkan components must be initialized manually.
+
+        void update();          // Update the engine. This function should be called every iteration.
+        void cleanup();         // Cleanup Engine, Vulkan, and GLFW
 
         GLFWwindow* GetWindow();                // Returns the window instance
         VkInstance& GetInstance();              // Returns the Vulkan instance
@@ -69,7 +73,7 @@ namespace Forge {    // Wrapper namespace
         std::vector<const char*> GetRequiredExtensions();       // Returns extensions required by application including GLFW
 
         GraphicsCard graphics_card;                         // Physical graphics card object
-        LogicalGraphicsCard logical_graphics_card;          // Logical graphics card object
+        LogicalDevice logical_graphics_card;                // Logical graphics card object
         Swapchain swapchain;                                // Swapchain object
         Pipeline pipeline;                                  // Pipeline object
         CommandBuffers command_buffers;                     // Command buffer objects

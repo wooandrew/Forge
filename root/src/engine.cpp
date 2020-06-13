@@ -70,60 +70,82 @@ namespace Forge {
         appInfo.engineVersion = VK_MAKE_VERSION(version.MAJOR, version.MINOR, version.PATCH);                                       // Set engine version
         appInfo.apiVersion = VK_API_VERSION_1_0;                                                                                    // Set minimum Vulkan API version required to run application
 
-        VkInstanceCreateInfo createInfo = {};                           // createInfo passes which extensions GLFW requires from Vulkan 
-        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;      // Identify createInfo as structure type INSTANCE_CREATE_INFO
-        //createInfo.flags = 0;                                         // Reserved for future use
-        createInfo.pApplicationInfo = &appInfo;                         // Pass appInfo as reference
+        // If Vulkan components are set to initialize automatically
+        if (metadata.autoinit) {
 
-        auto extensions = GetRequiredExtensions();                                          // Get required extensions
-        createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());        // Number of enabled extensions
-        createInfo.ppEnabledExtensionNames = extensions.data();                             // Set extensions
+            VkInstanceCreateInfo createInfo = {};                           // createInfo passes which extensions GLFW requires from Vulkan 
+            createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;      // Identify createInfo as structure type INSTANCE_CREATE_INFO
+            //createInfo.flags = 0;                                         // Reserved for future use
+            createInfo.pApplicationInfo = &appInfo;                         // Pass appInfo as reference
 
-        if (DEBUG_MODE) {   // If DEBUG_MODE is enabled
+            auto extensions = GetRequiredExtensions();                                          // Get required extensions
+            createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());        // Number of enabled extensions
+            createInfo.ppEnabledExtensionNames = extensions.data();                             // Set extensions
 
-            VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;         // debugCreateInfo contains parameters for the debug messenger
+            if (DEBUG_MODE) {   // If DEBUG_MODE is enabled
 
-            createInfo.enabledLayerCount = static_cast<uint32_t>(ValidationLayers.size());      // Set number of global validation layers to enable
-            createInfo.ppEnabledLayerNames = ValidationLayers.data();                           // Pass names of global validation layers to enable
+                VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;         // debugCreateInfo contains parameters for the debug messenger
 
-            PopulateDebugMessengerCreateInfo(debugCreateInfo);                                  // Populates debug create info
-            createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;          // Pointer to extension-function structure
+                createInfo.enabledLayerCount = static_cast<uint32_t>(ValidationLayers.size());      // Set number of global validation layers to enable
+                createInfo.ppEnabledLayerNames = ValidationLayers.data();                           // Pass names of global validation layers to enable
+
+                PopulateDebugMessengerCreateInfo(debugCreateInfo);                                  // Populates debug create info
+                createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;          // Pointer to extension-function structure
+            }
+            else {
+                createInfo.enabledLayerCount = 0;       // Set number of global validation layers to enable
+                createInfo.pNext = nullptr;             // Set pointer to debug create info to null
+            }
+
+            if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {                                      // If vkInstance creation fails
+                ASWL::utilities::Logger("E03V1", "Fatal Error: Failed to create instance -> vkCreateInstance().");      // then log the error
+                return 4;                                                                                               // and return corresponding error value
+            }
+
+            SetupDebugMessenger();
+
+            if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {           // If vkSurface creation fails
+                ASWL::utilities::Logger("E04S0", "Fatal Error: Window surface creation failed.");       // then log the error
+                return 5;                                                                               // and return corresponding error value
+            }
+
+            int ret = initVulkan();                                                                                                                                 // Automatically initialize Vulkan components
+            std::string msg = "Automatic Vulkan initialization ended " + ((ret == 0) ? "successfully." : "with error value [" + std::to_string(ret) + "].");        //
+            ASWL::utilities::Logger("E05V2", msg);                                                                                                                  // then log the results
+            return (ret == 0) ? 0 : 6;                                                                                                                              // and return the initialization status
         }
-        else {
-            createInfo.enabledLayerCount = 0;       // Set number of global validation layers to enable
-            createInfo.pNext = nullptr;             // Set pointer to debug create info to null
-        }
 
-        if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {                                      // If vkInstance creation fails
-            ASWL::utilities::Logger("E03V1", "Fatal Error: Failed to create instance -> vkCreateInstance().");      // then log the error
-            return 4;                                                                                               // and return corresponding error value
-        }
+        return 0;
+    }
 
-        SetupDebugMessenger();
+    // Initialize Vulkan components
+    int Engine::initVulkan() {
 
-        if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {           // If vkSurface creation fails
-            ASWL::utilities::Logger("E04S0", "Fatal Error: Window surface creation failed.");       // then log the error
-            return 5;                                                                               // and return corresponding error value
-        }
+        int status = 0;         // Vulkan initialization status
 
-        int ret = graphics_card.autochoose(instance, surface);
-        if (ret != 0)
-            return ret;
-        ret = logical_graphics_card.init(graphics_card.PhysicalDevice, surface);
-        if (ret != 0)
-            return ret;
-        ret = swapchain.init(graphics_card.PhysicalDevice, surface, logical_graphics_card.device);
-        if (ret != 0)
-            return ret;
-        ret = pipeline.init(logical_graphics_card.device, swapchain);
-        if (ret != 0)
-            return ret;
-        ret = swapchain.initFramebuffers(pipeline.renderPass);
-        if (ret != 0)
-            return ret;
-        ret = command_buffers.init(graphics_card.PhysicalDevice, logical_graphics_card.device, surface, swapchain, pipeline);
-        if (ret != 0)
-            return ret;
+        // Automatically choose a suitable graphics card to use
+        status = graphics_card.autochoose(instance, surface);
+        if (status != 0) return status;
+
+        // Initialize logical graphics card object
+        status = logical_graphics_card.init(graphics_card.device, surface);     
+        if (status != 0) return status;
+
+        // Initialize swapchain object
+        status = swapchain.init(graphics_card.device, surface, logical_graphics_card.device);
+        if (status != 0) return status;
+
+        // Initialize pipeline object
+        status = pipeline.init(logical_graphics_card.device, swapchain);
+        if (status != 0) return status;
+
+        // Initialize swapchain framebuffers
+        status = swapchain.initFramebuffers(pipeline.renderPass);
+        if (status != 0) return status;
+
+        // Initialize command buffers
+        status = command_buffers.init(graphics_card.device, logical_graphics_card.device, surface, swapchain, pipeline);
+        if (status != 0) return status;
 
         return 0;
     }
@@ -211,7 +233,7 @@ namespace Forge {
         PopulateDebugMessengerCreateInfo(debugCreateInfo);      // Populate the struct
 
         if (CreateDebugUtilsMessengerEXT(instance, &debugCreateInfo, nullptr, &dbgMessenger) != VK_SUCCESS)     // If DebuMessenger creation fails
-            ASWL::utilities::Logger("E05V3", "Error: Failed to setup debug messenger.");                        // Log the message
+            ASWL::utilities::Logger("E06V3", "Error: Failed to setup debug messenger.");                        // Log the message
     }
 
     VkResult Engine::CreateDebugUtilsMessengerEXT(VkInstance instance,                                          // Vulkan Instance
@@ -240,7 +262,7 @@ namespace Forge {
                                                          void* pUsrData)                                                    // Pointer to struct allowing user to pass data
     {
         std::string msg = "Error: Validation Layer -> " + std::string(pCallbackData->pMessage);
-        ASWL::utilities::Logger("E06V4", msg);      // Log the error
+        ASWL::utilities::Logger("E07V4", msg);      // Log the error
         return VK_FALSE;
     }
 

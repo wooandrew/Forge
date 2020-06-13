@@ -1,10 +1,11 @@
 1   "E00G0", "Fatal Error: Failed to initialize GLFW -> !glfwInit()."
-2   "E01G1", "Fatal Error: Failed to create window -> !glfwCreateWindow()"
-3   "E02V0", "Fatal Error: Requested validation layers were not found -> !AllValidationLayersSupported()"
-4   "E03V1", "Fatal Error: Failed to create instance -> vkCreateInstance()"
+2   "E01G1", "Fatal Error: Failed to create window -> !glfwCreateWindow()."
+3   "E02V0", "Fatal Error: Requested validation layers were not found -> !AllValidationLayersSupported()."
+4   "E03V1", "Fatal Error: Failed to create instance -> vkCreateInstance()."
 5   "E04S0", "Fatal Error: Window surface creation failed."
-6   "E05V2", "Fatal Error: Failed to setup debug messenger"
-7   "E06V3", "Error: Validation Layer ->", msg
+?   "E05V2", "Vulkan automatic initialization ended " + ((ret == 0) ? "successfully" : "with error value [" + error + "]."
+X   "E06V3", "Fatal Error: Failed to setup debug messenger."
+X   "E07V4", "Error: Validation Layer ->", msg
 
 1   "P00G0", "Fatal Error: Failed to find GPU that supports Vulkan."
 2   "P01G1", "Fatal Error: Failed to find GPU that supports required Vulkan operation."
@@ -25,5 +26,5 @@
 
 1   "CB0P0", "Fatal Error: Failed to create command pool."
 2   "CB001", "Fatal Error: Failed to allocate command buffers."
-3   "CB002", "Fatal Error: Failed to begin command buffer at index [" + std::to_string(i) + "]."
-4   "CB003", "Fatal Error: Failed to end command buffer at index [" + std::to_string(i) + "]."
+3   "CB002", "Fatal Error: Failed to begin command buffer at index [" + index + "]."
+4   "CB003", "Fatal Error: Failed to end command buffer at index [" + index + "]."

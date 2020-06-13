@@ -36,26 +36,26 @@ namespace Forge {
         Swapchain();        // Default constructor
         ~Swapchain();       // Default destructor
 
-        int init(VkPhysicalDevice& graphicscard, VkSurfaceKHR& surface, VkDevice& logicaldevice);       // Initialize swapchain
+        int init(VkPhysicalDevice& graphicscard, VkSurfaceKHR& surface, VkDevice& device);          // Initialize swapchain
         int initFramebuffers(VkRenderPass& renderpass);
         void cleanup();
 
-        VkExtent2D GetExtent();                                 // Returns swapchain extent
-        VkFormat GetImageFormat();                              // Returns swapchain image format
+        VkExtent2D& GetExtent();                                // Returns swapchain extent
+        VkFormat& GetImageFormat();                             // Returns swapchain image format
         const std::vector<VkImageView> GetImageViews();         // Returns swapchain image views
         std::vector<VkFramebuffer> GetFramebuffers();           // Returns swapchain framebuffers
 
     private:
 
-        VkSwapchainKHR swapchain;                   // Handle to swapchain object
-        VkFormat swapchainImageFormat;              // Swapchain image format
-        VkExtent2D swapchainExtent;                 // 2D array containing swapchain extent
+        VkSwapchainKHR swapchain;       // Handle to swapchain object
+        VkFormat ImageFormat;           // Swapchain image format
+        VkExtent2D extent;              // 2D array containing swapchain extent
 
-        std::vector<VkImage> swapchainImages;                   // List of handles to image objects
-        std::vector<VkImageView> swapchainImageViews;           // List of handles to image view object
-        std::vector<VkFramebuffer> swapchainFramebuffers;       // List of handles to swapchain framebuffers
+        std::vector<VkImage> images;                    // List of handles to image objects
+        std::vector<VkImageView> ImageViews;            // List of handles to image view object
+        std::vector<VkFramebuffer> framebuffers;        // List of handles to swapchain framebuffers
 
-        VkDevice logicaldevice;         // Handle to Logical device
+        VkDevice device;        // Handle to Logical device
     };
 }
 

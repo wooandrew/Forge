@@ -25,6 +25,12 @@ int main() {
 
     CLOG("CLOG-TEST", 0);
 
+    uint32_t extensionCount = 0;
+    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+
+    std::string m00002 = "[" + std::to_string(extensionCount) + "] extensions supported.";
+    ASWL::utilities::Logger("00002", m00002);
+
     e.metadata.vkAppName = "TheForge Sandbox";
     e.metadata.windowTitle = "TheForge Sandbox";
 
@@ -33,13 +39,6 @@ int main() {
         CLOG("engine", ret);
         return ret;
     }
-
-    uint32_t extensionCount = 0;
-    vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-
-    std::string m00002 = "[" + std::to_string(extensionCount) + "] extensions supported.";
-    ASWL::utilities::Logger("00002", m00002);
-
 
     while (!e.WindowShouldClose()) {
         e.update();
