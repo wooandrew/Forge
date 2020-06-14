@@ -30,9 +30,12 @@ namespace Forge {
         int init(VkPhysicalDevice& graphicscard, VkDevice& device, VkSurfaceKHR& surface, Swapchain& swapchain, Pipeline& pipeline);        // CommandBuffers initializer
         void cleanup();
 
+        void SetCanvasClearColor(VkClearValue clearcolor);         // Set canvas clear color
+
     private:
 
-        std::vector<VkCommandBuffer> command_buffers;        // List of handles to command buffers
+        VkClearValue clearCanvasColor;                  // Canvas clearing color
+        std::vector<VkCommandBuffer> cmdBuffers;        // List of handles to command buffers
 
         VkCommandPool CommandPool;      // Handle to VkCommandPool object
         VkDevice device;                // Handle to logical graphics card

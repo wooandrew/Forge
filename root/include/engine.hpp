@@ -23,6 +23,8 @@
 #include "pipeline.hpp"
 #include "command_buffers.hpp"
 
+#include "2D/renderer.hpp"
+
 namespace Forge {    // Wrapper namespace
 
     class Engine {
@@ -36,6 +38,7 @@ namespace Forge {    // Wrapper namespace
 
             // Engine metadata
             bool autoinit{ true };     // Automatically initialize engine components
+            VkClearValue clearcolor = { 1.f, 1.f, 1.f, 0.f };          // Render surface clear color
 
             // Vulkan initialization metadata
             const char* vkAppName{ "vkForgeDefault" };      // VkApp app name
@@ -52,15 +55,20 @@ namespace Forge {    // Wrapper namespace
 
         int init();             // Initialize the engine. This function must be called before the engine is used.
         int initVulkan();       // Initialize Vulkan components of the engine. If metadata.autoinit is disabled, Vulkan components must be initialized manually.
+        int initRenderer();     // Initialize graphics renderer
 
         void update();          // Update the engine. This function should be called every iteration.
         void cleanup();         // Cleanup Engine, Vulkan, and GLFW
+
+        void SetClearColor();       // Set canvas clear color
 
         GLFWwindow* GetWindow();                // Returns the window instance
         VkInstance& GetInstance();              // Returns the Vulkan instance
         VkSurfaceKHR& GetSurface();             // Returns the Vulkan surface
 
         bool WindowShouldClose() const;         // Return if window should close
+
+        Renderer render2D;      // 2D Renderer
 
     private:
 
@@ -72,11 +80,11 @@ namespace Forge {    // Wrapper namespace
 
         std::vector<const char*> GetRequiredExtensions();       // Returns extensions required by application including GLFW
 
-        GraphicsCard graphics_card;                         // Physical graphics card object
-        LogicalDevice logical_graphics_card;                // Logical graphics card object
-        Swapchain swapchain;                                // Swapchain object
-        Pipeline pipeline;                                  // Pipeline object
-        CommandBuffers command_buffers;                     // Command buffer objects
+        GraphicsCard graphics_card;                 // Physical graphics card object
+        LogicalDevice logical_graphics_card;        // Logical graphics card object
+        Swapchain swapchain;                        // Swapchain object
+        Pipeline pipeline;                          // Pipeline object
+        CommandBuffers command_buffers;             // Command buffer objects
 
 
         // *** Start Validation Layer stuff ***************************************************************************************************************************************

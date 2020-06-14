@@ -1,30 +1,43 @@
+Engine
 1   "E00G0", "Fatal Error: Failed to initialize GLFW -> !glfwInit()."
 2   "E01G1", "Fatal Error: Failed to create window -> !glfwCreateWindow()."
 3   "E02V0", "Fatal Error: Requested validation layers were not found -> !AllValidationLayersSupported()."
 4   "E03V1", "Fatal Error: Failed to create instance -> vkCreateInstance()."
 5   "E04S0", "Fatal Error: Window surface creation failed."
-?   "E05V2", "Vulkan automatic initialization ended " + ((ret == 0) ? "successfully" : "with error value [" + error + "]."
-X   "E06V3", "Fatal Error: Failed to setup debug messenger."
-X   "E07V4", "Error: Validation Layer ->", msg
+6   "E05V2", "Fatal Error: An error occured while attempting to initialize Vulkan components [" + status + "]."
+7   "E06R0", "Fatal Error: Failed to initialize renderer with error [" + status + "]."
+X   "E07V3", "Fatal Error: Failed to setup debug messenger."
+X   "E08V4", "Error: Validation Layer ->", msg
 
-1   "P00G0", "Fatal Error: Failed to find GPU that supports Vulkan."
-2   "P01G1", "Fatal Error: Failed to find GPU that supports required Vulkan operation."
+Physical Device
+1   "PD0G0", "Fatal Error: Failed to find GPU that supports Vulkan."
+2   "PD1G1", "Fatal Error: Failed to find GPU that supports required Vulkan operation."
 
+Logical Device
 1   "L00G0", "Fatal Error: Failed to create a logical device -> graphics card."
 
+Swapchain
 1   "S0000", "Fatal Error: Failed to create swapchain."
 2   "S0001", "Fatal Error: Failed to create Image View."
 3   "S02F0", "Fatal Error: Failed to create swapchain framebuffer at index [" + index + "]."
 
+Pipeline
 1   "P00R0", "Fatal Error: Render Pass creation failed."
 2   "P01S0", "Fatal Error: Failed to create vertex shader module."
 3   "P02S1", "Fatal Error: Failed to create fragment shader module."
 4   "P0003", "Fatal Error: Failed to create pipeline layout."
 5   "P0004", "Fatal Error: Failed to create graphics pipeline."
 6   "P05S2", "Fatal Error: Failed to load shader from [" + path + "]."
-7   "P06S3", "Fatal Error: Only SPIR-V is currently supported."
 
+Command Buffers
 1   "CB0P0", "Fatal Error: Failed to create command pool."
 2   "CB001", "Fatal Error: Failed to allocate command buffers."
 3   "CB002", "Fatal Error: Failed to begin command buffer at index [" + index + "]."
 4   "CB003", "Fatal Error: Failed to end command buffer at index [" + index + "]."
+
+Renderer
+1   "2D0S0", "Fatal Error: Failed to create semaphore/fence object at index [" + index + "]."
+
+Miscellaneous
+-1  "XXR3D", "3D Rendering is not yet supported."                   -> Init 3D Renderer
+-1  "XXP6S", "Fatal Error: Only SPIR-V is currently supported."     -> Pipeline 6 shader 3 -> GLSL shader compile

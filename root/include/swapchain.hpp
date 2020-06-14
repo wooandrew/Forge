@@ -32,6 +32,7 @@ namespace Forge {
     public:
 
         friend class Engine;
+        friend class Renderer;
 
         Swapchain();        // Default constructor
         ~Swapchain();       // Default destructor

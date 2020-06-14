@@ -39,7 +39,7 @@ namespace Forge {
         vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);        // Get number of devices that support Vulkan
 
         if (deviceCount == 0) {                                                                             // If there are no devices that support Vulkan
-            ASWL::utilities::Logger("P00G0", "Fatal Error: Failed to find GPU that supports Vulkan.");      // then log the error
+            ASWL::utilities::Logger("PD0G0", "Fatal Error: Failed to find GPU that supports Vulkan.");      // then log the error
             return 1;                                                                                       // and return the error
         }
 
@@ -56,7 +56,7 @@ namespace Forge {
         }
 
         if (device == VK_NULL_HANDLE) {                                                                                         // If the GPU is null
-            ASWL::utilities::Logger("P01G1", "Fatal Error: Failed to find GPU that supports required Vulkan operation.");       // then log the error
+            ASWL::utilities::Logger("PD1G1", "Fatal Error: Failed to find GPU that supports required Vulkan operation.");       // then log the error
             return 2;                                                                                                           // and return the error
         }
 

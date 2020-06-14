@@ -40,8 +40,15 @@ int main() {
         return ret;
     }
 
+    float num = 0;
+
     while (!e.WindowShouldClose()) {
         e.update();
+        e.render2D.draw();
+
+        num = std::fmod(++num, 255) / 255;
+        e.metadata.clearcolor = { num, num, num, 0.f };
+        e.SetClearColor();
     }
 
     return 0;

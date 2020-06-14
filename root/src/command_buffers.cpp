@@ -13,6 +13,7 @@ namespace Forge {
 
     // Default constructor
     CommandBuffers::CommandBuffers() {
+        clearCanvasColor = { 1.f, 1.f, 1.f, 0.f };
         CommandPool = VK_NULL_HANDLE;
     }
     // Default destructor
@@ -36,25 +37,26 @@ namespace Forge {
             return 1;                                                                                   // and return the corresponding value
         }
 
-        command_buffers.resize(swapchain.GetFramebuffers().size());         // Resize command buffers list to match framebuffers size
+        cmdBuffers.resize(swapchain.GetFramebuffers().size());          // Resize command buffers list to match framebuffers size
 
-        VkCommandBufferAllocateInfo allocInfo = {};                                         // allocInfo specifies the parameters of the command buffer allocation info
-        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;                   // Identify allocInfo as structure type COMMAND_BUFFER_ALLOCATE_INFO
-        allocInfo.commandPool = CommandPool;                                                // Set command pool
-        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;                                  // Set command buffer level
-        allocInfo.commandBufferCount = static_cast<uint32_t>(command_buffers.size());       // Number of command buffers
+        VkCommandBufferAllocateInfo allocInfo = {};                                     // allocInfo specifies the parameters of the command buffer allocation info
+        allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;               // Identify allocInfo as structure type COMMAND_BUFFER_ALLOCATE_INFO
+        allocInfo.commandPool = CommandPool;                                            // Set command pool
+        allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;                              // Set command buffer level
+        allocInfo.commandBufferCount = static_cast<uint32_t>(cmdBuffers.size());        // Number of command buffers
 
-        if (vkAllocateCommandBuffers(device, &allocInfo, command_buffers.data()) != VK_SUCCESS) {       // If command buffer allocation fails
+        if (vkAllocateCommandBuffers(device, &allocInfo, cmdBuffers.data()) != VK_SUCCESS) {            // If command buffer allocation fails
             ASWL::utilities::Logger("CB001", "Fatal Error: Failed to allocate command buffers.");       // then log the error
             return 2;                                                                                   // and return the corresponding value
         }
 
-        for (size_t i = 0; i < command_buffers.size(); i++) {
+        // Iterate through every command buffer
+        for (size_t i = 0; i < cmdBuffers.size(); i++) {
 
             VkCommandBufferBeginInfo beginInfo = {};                                // beginInfo specifies the parameters of the command buffer begin operation
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;          // Identify beginInfo as structure type COMMAND_BUFFER_BEGIN_INFO
             
-            if (vkBeginCommandBuffer(command_buffers[i], &beginInfo) != VK_SUCCESS) {                                           // If beginning command buffer fails
+            if (vkBeginCommandBuffer(cmdBuffers[i], &beginInfo) != VK_SUCCESS) {                                                // If beginning command buffer fails
                 std::string msg = "Fatal Error: Failed to begin command buffer at index [" + std::to_string(i) + "].";          // 
                 ASWL::utilities::Logger("CB002", msg);                                                                          // then log the error
                 return 3;                                                                                                       // and return the corresponding value
@@ -66,17 +68,15 @@ namespace Forge {
             renderpassBeginInfo.framebuffer = swapchain.GetFramebuffers()[i];           // Set framebuffer
             renderpassBeginInfo.renderArea.offset = { 0, 0 };                           // Set render canvas offset
             renderpassBeginInfo.renderArea.extent = swapchain.GetExtent();              // Set render canvas extent
+            renderpassBeginInfo.clearValueCount = 1;                                    // Number of elements in pClearValue
+            renderpassBeginInfo.pClearValues = &clearCanvasColor;                       // List of canvas clear values
 
-            VkClearValue clearCanvasColor = { 0.f, 0.f, 0.f, 0.f };         // Set render canvas clearing color
-            renderpassBeginInfo.clearValueCount = 1;                        // Number of elements in pClearValue
-            renderpassBeginInfo.pClearValues = &clearCanvasColor;           // List of canvas clear values
+            vkCmdBeginRenderPass(cmdBuffers[i], &renderpassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);                      // Start a new render pass
+            vkCmdBindPipeline(cmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.GetGraphicsPipeline());          // Bind pipeline object to command buffer
+            vkCmdDraw(cmdBuffers[i], 3, 1, 0, 0);                                                                       // Draw primitive
+            vkCmdEndRenderPass(cmdBuffers[i]);                                                                          // End render pass
 
-            vkCmdBeginRenderPass(command_buffers[i], &renderpassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);                     // Start a new render pass
-            vkCmdBindPipeline(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.GetGraphicsPipeline());         // Bind pipeline object to command buffer
-            vkCmdDraw(command_buffers[i], 3, 1, 0, 0);                                                                      // Draw primitive
-            vkCmdEndRenderPass(command_buffers[i]);                                                                         // End render pass
-
-            if (vkEndCommandBuffer(command_buffers[i]) != VK_SUCCESS) {                                                     // If ending command buffer fails
+            if (vkEndCommandBuffer(cmdBuffers[i]) != VK_SUCCESS) {                                                          // If ending command buffer fails
                 std::string msg = "Fatal Error: Failed to end command buffer at index [" + std::to_string(i) + "].";        // 
                 ASWL::utilities::Logger("CB003", msg);                                                                      // then log the error
                 return 4;                                                                                                   // and return the corresponding value
@@ -84,6 +84,11 @@ namespace Forge {
         }
 
         return 0;
+    }
+
+    // Set canvas clear color
+    void CommandBuffers::SetCanvasClearColor(VkClearValue clearcolor) {
+        clearCanvasColor = clearcolor;
     }
 
     void CommandBuffers::cleanup() {

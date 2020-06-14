@@ -31,6 +31,7 @@ namespace Forge {
     public:
 
         friend class Engine;
+        friend class Renderer;
 
         Pipeline();       // Default constructor
         ~Pipeline();      // Default destructor

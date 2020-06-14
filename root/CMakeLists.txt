@@ -16,7 +16,7 @@ add_library(libforge SHARED
     "include/swapchain.hpp"             "src/swapchain.cpp"
     "include/pipeline.hpp"              "src/pipeline.cpp"              
     "include/command_buffers.hpp"       "src/command_buffers.cpp"
- )
+    "include/2D/renderer.hpp"           "src/2D/renderer.cpp")
 
 include(GenerateExportHeader)
 generate_export_header(libforge)

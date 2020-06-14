@@ -7,7 +7,6 @@
 
 #include <cstring>
 
-
 namespace Forge {
 
     // Engine constructor
@@ -22,6 +21,8 @@ namespace Forge {
         surface = VK_NULL_HANDLE;
 
         dbgMessenger = VK_NULL_HANDLE;
+
+        render2D.type = Renderer::RendererType::Render_2D;
     }
 
     // Engine destructor
@@ -70,7 +71,7 @@ namespace Forge {
         appInfo.engineVersion = VK_MAKE_VERSION(version.MAJOR, version.MINOR, version.PATCH);                                       // Set engine version
         appInfo.apiVersion = VK_API_VERSION_1_0;                                                                                    // Set minimum Vulkan API version required to run application
 
-        // If Vulkan components are set to initialize automatically
+        // If Engine components are set to initialize automatically
         if (metadata.autoinit) {
 
             VkInstanceCreateInfo createInfo = {};                           // createInfo passes which extensions GLFW requires from Vulkan 
@@ -109,10 +110,20 @@ namespace Forge {
                 return 5;                                                                               // and return corresponding error value
             }
 
-            int ret = initVulkan();                                                                                                                                 // Automatically initialize Vulkan components
-            std::string msg = "Automatic Vulkan initialization ended " + ((ret == 0) ? "successfully." : "with error value [" + std::to_string(ret) + "].");        //
-            ASWL::utilities::Logger("E05V2", msg);                                                                                                                  // then log the results
-            return (ret == 0) ? 0 : 6;                                                                                                                              // and return the initialization status
+            int ret = initVulkan();         // Automatically initialize Vulkan components
+            if (ret != 0) {                                                                                                                                 // If Vulkan component initialization fails
+                std::string msg = "Fatal Error: An error occured while attempting to initialize Vulkan components [" + std::to_string(ret) + "].";          //
+                ASWL::utilities::Logger("E05V2", msg);                                                                                                      // then log the error
+                return 6;                                                                                                                                   // and return the corresponding error value
+            }
+            
+            // Initialize renderer
+            ret = initRenderer();
+            if (ret != 0) {                                                                                                         // If renderer initialization fails
+                std::string msg = "Fatal Error: Failed to initialize renderer with error [" + std::to_string(ret) + "].";           //
+                ASWL::utilities::Logger("E06R0", msg);                                                                              // then log the error
+                return 7;                                                                                                           // and return the corresponding error value
+            }
         }
 
         return 0;
@@ -150,28 +161,22 @@ namespace Forge {
         return 0;
     }
 
+    // Initialize graphics renderer
+    int Engine::initRenderer() {
+
+        int status = 0;
+        status = render2D.init(logical_graphics_card, swapchain, pipeline, command_buffers.cmdBuffers);
+        if (status != 0) return status;
+    }
+
     // Update engine
     void Engine::update() {
         glfwPollEvents();       // Poll events
     }
 
-    // Cleanup Engine -> Vulkan/GLFW
-    void Engine::cleanup() {
-
-        command_buffers.cleanup();
-        pipeline.cleanup();
-        swapchain.cleanup();
-        logical_graphics_card.cleanup();
-
-        vkDestroySurfaceKHR(instance, surface, nullptr);        // Destroy Vulkan surface
-
-        if (DEBUG_MODE)                                                             // If DEBUG_MODE is enabled
-            DestroyDebugUtilsMessengerEXT(instance, dbgMessenger, nullptr);         // Destroy Debug Message handler
-
-        vkDestroyInstance(instance, nullptr);       // Destroy Vulkan instance
-
-        glfwDestroyWindow(window);      // Destroy window
-        glfwTerminate();                // then terminate GLFW
+    // Set render surface clear color
+    void Engine::SetClearColor() {
+        command_buffers.SetCanvasClearColor(metadata.clearcolor);
     }
 
     // Check if validation layers are supported
@@ -233,7 +238,7 @@ namespace Forge {
         PopulateDebugMessengerCreateInfo(debugCreateInfo);      // Populate the struct
 
         if (CreateDebugUtilsMessengerEXT(instance, &debugCreateInfo, nullptr, &dbgMessenger) != VK_SUCCESS)     // If DebuMessenger creation fails
-            ASWL::utilities::Logger("E06V3", "Error: Failed to setup debug messenger.");                        // Log the message
+            ASWL::utilities::Logger("E07V3", "Error: Failed to setup debug messenger.");                        // Log the message
     }
 
     VkResult Engine::CreateDebugUtilsMessengerEXT(VkInstance instance,                                          // Vulkan Instance
@@ -262,7 +267,7 @@ namespace Forge {
                                                          void* pUsrData)                                                    // Pointer to struct allowing user to pass data
     {
         std::string msg = "Error: Validation Layer -> " + std::string(pCallbackData->pMessage);
-        ASWL::utilities::Logger("E07V4", msg);      // Log the error
+        ASWL::utilities::Logger("E08V4", msg);      // Log the error
         return VK_FALSE;
     }
 
@@ -298,5 +303,27 @@ namespace Forge {
     // Return whether or not window should close based on polled events
     bool Engine::WindowShouldClose() const {
         return glfwWindowShouldClose(window);
+    }
+
+    // Cleanup Engine -> Vulkan/GLFW
+    void Engine::cleanup() {
+
+        vkDeviceWaitIdle(logical_graphics_card.device);
+
+        render2D.cleanup();
+        command_buffers.cleanup();
+        pipeline.cleanup();
+        swapchain.cleanup();
+        logical_graphics_card.cleanup();
+
+        vkDestroySurfaceKHR(instance, surface, nullptr);        // Destroy Vulkan surface
+
+        if (DEBUG_MODE)                                                             // If DEBUG_MODE is enabled
+            DestroyDebugUtilsMessengerEXT(instance, dbgMessenger, nullptr);         // Destroy Debug Message handler
+
+        vkDestroyInstance(instance, nullptr);       // Destroy Vulkan instance
+
+        glfwDestroyWindow(window);      // Destroy window
+        glfwTerminate();                // then terminate GLFW
     }
 }

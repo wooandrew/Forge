@@ -19,6 +19,7 @@ namespace Forge {
     public:
 
         friend class Engine;
+        friend class Renderer;
 
         LogicalDevice();        // Default constructor
         ~LogicalDevice();       // Default destructor

@@ -47,12 +47,22 @@ namespace Forge {
         subpass.colorAttachmentCount = 1;                                   // Number of color attachments
         subpass.pColorAttachments = &colorAttachmentRef;                    // Pointer to VkAttachmentRef defining subpasss color attachments
 
+        VkSubpassDependency subpassDependency = {};                                             // Structure specifies subpass dependency
+        subpassDependency.srcSubpass = VK_SUBPASS_EXTERNAL;                                     // Subpass index of first subpass in the dependency
+        subpassDependency.dstSubpass = 0;                                                       // Subpass index of the destination subpass in the dependency
+        subpassDependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;         // Bitmask of source stage mask
+        subpassDependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;         // Bitmask of destination stage mask
+        subpassDependency.srcAccessMask = 0;                                                    // Bitmask of source access mask
+        subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;                 // Bitmask of destination access mask
+
         VkRenderPassCreateInfo renderpassInfo = {};                             // renderpassInfo specifies the parameters of the renderpass object
         renderpassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;       // Identify renderpassInfo as structure type RENDER_PASS_CREATE_INFO
         renderpassInfo.attachmentCount = 1;                                     // Number of attachments used by renderpass object
         renderpassInfo.pAttachments = &colorAttachment;                         // Pointer to structures describing renderpass attachments
         renderpassInfo.subpassCount = 1;                                        // Number of subpasses to create
         renderpassInfo.pSubpasses = &subpass;                                   // Pointer to array of structures describing each subpass
+        renderpassInfo.dependencyCount = 1;                                     // Number of subpass dependencies
+        renderpassInfo.pDependencies = &subpassDependency;                      // Pointer to subpass dependency structure
 
         if (vkCreateRenderPass(device, &renderpassInfo, nullptr, &renderPass) != VK_SUCCESS) {          // If renderpass creation fails
             ASWL::utilities::Logger("P00R0", "Fatal Error: Render Pass creation failed.");              // then log the error
@@ -259,8 +269,8 @@ namespace Forge {
             return 0;
         }
         else {
-            ASWL::utilities::Logger("P06S3", "Fatal Error: Only SPIR-V is currently supported.");       // log the error
-            return 7;                                                                                   // and end loading process
+            ASWL::utilities::Logger("XXP6S", "Fatal Error: Only SPIR-V is currently supported.");
+            return -1;
         }
     }
 
