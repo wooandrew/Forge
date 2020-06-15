@@ -21,11 +21,11 @@ namespace Forge {
     }
 
     // Initialize command buffers
-    int CommandBuffers::init(VkPhysicalDevice& graphicscard, VkDevice& device, VkSurfaceKHR& surface, Swapchain& swapchain, Pipeline& pipeline) {
+    int CommandBuffers::init(VkPhysicalDevice& _graphicscard, VkDevice& _device, VkSurfaceKHR& _surface, Swapchain& _swapchain, Pipeline& _pipeline, VkBuffer& _vertexbuffer) {
 
-        this->device = device;
+        device = _device;
 
-        QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(graphicscard, surface);
+        QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(_graphicscard, _surface);
 
         VkCommandPoolCreateInfo commandPoolInfo = {};                                       // commandPoolInfo specifies the parameters of the command pool
         commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;                 // Identify commandPoolInfo as structure type COMMAND_POOL_CREATE_INFO
@@ -37,7 +37,15 @@ namespace Forge {
             return 1;                                                                                   // and return the corresponding value
         }
 
-        cmdBuffers.resize(swapchain.GetFramebuffers().size());          // Resize command buffers list to match framebuffers size
+        int status = CreateCommandBuffers(_surface, _swapchain, _pipeline, _vertexbuffer);
+
+        return status;
+    }
+
+    // Create command buffers
+    int CommandBuffers::CreateCommandBuffers(VkSurfaceKHR& _surface, Swapchain& _swapchain, Pipeline& _pipeline, VkBuffer& _vertexbuffer) {
+
+        cmdBuffers.resize(_swapchain.GetFramebuffers().size());         // Resize command buffers list to match framebuffers size
 
         VkCommandBufferAllocateInfo allocInfo = {};                                     // allocInfo specifies the parameters of the command buffer allocation info
         allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;               // Identify allocInfo as structure type COMMAND_BUFFER_ALLOCATE_INFO
@@ -55,7 +63,7 @@ namespace Forge {
 
             VkCommandBufferBeginInfo beginInfo = {};                                // beginInfo specifies the parameters of the command buffer begin operation
             beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;          // Identify beginInfo as structure type COMMAND_BUFFER_BEGIN_INFO
-            
+
             if (vkBeginCommandBuffer(cmdBuffers[i], &beginInfo) != VK_SUCCESS) {                                                // If beginning command buffer fails
                 std::string msg = "Fatal Error: Failed to begin command buffer at index [" + std::to_string(i) + "].";          // 
                 ASWL::utilities::Logger("CB002", msg);                                                                          // then log the error
@@ -64,16 +72,20 @@ namespace Forge {
 
             VkRenderPassBeginInfo renderpassBeginInfo = {};                             // renderpassBeginInfo specifies the parameters of the render pass begin operation
             renderpassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;       // Identify renderpassBeginInfo as structure type RENDER_PASS_BEGIN_INFO
-            renderpassBeginInfo.renderPass = pipeline.GetRenderPass();                  // Set renderpass
-            renderpassBeginInfo.framebuffer = swapchain.GetFramebuffers()[i];           // Set framebuffer
+            renderpassBeginInfo.renderPass = _pipeline.GetRenderPass();                 // Set renderpass
+            renderpassBeginInfo.framebuffer = _swapchain.GetFramebuffers()[i];          // Set framebuffer
             renderpassBeginInfo.renderArea.offset = { 0, 0 };                           // Set render canvas offset
-            renderpassBeginInfo.renderArea.extent = swapchain.GetExtent();              // Set render canvas extent
+            renderpassBeginInfo.renderArea.extent = _swapchain.GetExtent();             // Set render canvas extent
             renderpassBeginInfo.clearValueCount = 1;                                    // Number of elements in pClearValue
             renderpassBeginInfo.pClearValues = &clearCanvasColor;                       // List of canvas clear values
 
+            VkBuffer vertexBuffers[] = { _vertexbuffer };       // Array of vertex buffers
+            VkDeviceSize offsets[] = { 0 };                     // Vulkan device memory size/offset
+
             vkCmdBeginRenderPass(cmdBuffers[i], &renderpassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);                      // Start a new render pass
-            vkCmdBindPipeline(cmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.GetGraphicsPipeline());          // Bind pipeline object to command buffer
-            vkCmdDraw(cmdBuffers[i], 3, 1, 0, 0);                                                                       // Draw primitive
+            vkCmdBindPipeline(cmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline.GetGraphicsPipeline());         // Bind pipeline object to command buffer
+            vkCmdBindVertexBuffers(cmdBuffers[i], 0, 1, vertexBuffers, offsets);                                        // Bind vertex buffer
+            vkCmdDraw(cmdBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);                                  // Draw primitive
             vkCmdEndRenderPass(cmdBuffers[i]);                                                                          // End render pass
 
             if (vkEndCommandBuffer(cmdBuffers[i]) != VK_SUCCESS) {                                                          // If ending command buffer fails

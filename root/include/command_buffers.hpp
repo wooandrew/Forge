@@ -27,7 +27,9 @@ namespace Forge {
         CommandBuffers();       // Default constructor
         ~CommandBuffers();      // Default destructor
 
-        int init(VkPhysicalDevice& graphicscard, VkDevice& device, VkSurfaceKHR& surface, Swapchain& swapchain, Pipeline& pipeline);        // CommandBuffers initializer
+        int init(VkPhysicalDevice& _graphicscard, VkDevice& _device, VkSurfaceKHR& _surface, Swapchain& _swapchain, Pipeline& _pipeline, VkBuffer& _vertexbuffer);       // CommandBuffers initializer
+        int CreateCommandBuffers(VkSurfaceKHR& _surface, Swapchain& _swapchain, Pipeline& _pipeline, VkBuffer& _vertexbuffer);                                           // Create command buffers
+
         void cleanup();
 
         void SetCanvasClearColor(VkClearValue clearcolor);         // Set canvas clear color

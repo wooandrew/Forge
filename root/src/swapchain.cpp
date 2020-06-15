@@ -68,14 +68,20 @@ namespace Forge {
         return VK_PRESENT_MODE_FIFO_KHR;    // Return FIFO_KHR
     }
 
-    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities) {
+    VkExtent2D ChooseSwapExtent(GLFWwindow* window, const VkSurfaceCapabilitiesKHR& capabilities) {
 
         if (capabilities.currentExtent.width != UINT32_MAX)         // If surface extent does not equal the max UINT32 size (4,294,967,294)
             return capabilities.currentExtent;                      // then return the current surface extent
 
         else {        // Otherwise set the surface extent
 
-            VkExtent2D actualExtent = { 1000, 600 };
+            int width = 0;          // Extent width
+            int height = 0;         // Extent height
+
+            // Get framebuffer extent from GLFW Window object
+            glfwGetFramebufferSize(window, &width, &height);
+
+            VkExtent2D actualExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
             actualExtent.width = std::clamp(actualExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width);              // Clamp width
             actualExtent.height = std::clamp(actualExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);          // Clamp height
 
@@ -96,7 +102,7 @@ namespace Forge {
     }
 
     // Initialize swapchain
-    int Swapchain::init(VkPhysicalDevice& graphicscard, VkSurfaceKHR& surface, VkDevice& _device) {
+    int Swapchain::init(GLFWwindow* window, VkSurfaceKHR& surface, VkPhysicalDevice& graphicscard, VkDevice& _device) {
 
         this->device = _device;         // Logical device
 
@@ -104,7 +110,8 @@ namespace Forge {
 
         VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapchainSupport.formats);       // Get surface format
         VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapchainSupport.presentModes);        // Get surface present mode
-        VkExtent2D _extent = ChooseSwapExtent(swapchainSupport.capabilities);                       // Get surface extent
+        VkExtent2D _extent = ChooseSwapExtent(window, swapchainSupport.capabilities);               // Get surface extent
+        extent = _extent;
 
         // Request one more image than minimum to avoid bottleneck
         uint32_t imageCount = swapchainSupport.capabilities.minImageCount + 1;

@@ -24,7 +24,7 @@ namespace Forge {
     SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice& device, VkSurfaceKHR& surface);             // Populates SwapChainSupportDetails
     VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);        // Choose surface format
     VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);         // Choose surface present mode
-    VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);                                  // Choose swap extent -> surface resolution
+    VkExtent2D ChooseSwapExtent(GLFWwindow* window, const VkSurfaceCapabilitiesKHR& capabilities);              // Choose swap extent -> surface resolution
 
     // Swapchain class
     class Swapchain {
@@ -37,7 +37,7 @@ namespace Forge {
         Swapchain();        // Default constructor
         ~Swapchain();       // Default destructor
 
-        int init(VkPhysicalDevice& graphicscard, VkSurfaceKHR& surface, VkDevice& device);          // Initialize swapchain
+        int init(GLFWwindow* window, VkSurfaceKHR& surface, VkPhysicalDevice& graphicscard, VkDevice& device);      // Initialize swapchain
         int initFramebuffers(VkRenderPass& renderpass);
         void cleanup();
 

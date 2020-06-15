@@ -111,10 +111,10 @@ namespace Forge {
             }
 
             int ret = initVulkan();         // Automatically initialize Vulkan components
-            if (ret != 0) {                                                                                                                                 // If Vulkan component initialization fails
-                std::string msg = "Fatal Error: An error occured while attempting to initialize Vulkan components [" + std::to_string(ret) + "].";          //
-                ASWL::utilities::Logger("E05V2", msg);                                                                                                      // then log the error
-                return 6;                                                                                                                                   // and return the corresponding error value
+            if (ret != 0) {                                                                                                                 // If Vulkan component initialization fails
+                std::string msg = "Fatal Error: Failed to initialize Vulkan components with error [" + std::to_string(ret) + "].";          //
+                ASWL::utilities::Logger("E05V2", msg);                                                                                      // then log the error
+                return 6;                                                                                                                   // and return the corresponding error value
             }
             
             // Initialize renderer
@@ -136,27 +136,31 @@ namespace Forge {
 
         // Automatically choose a suitable graphics card to use
         status = graphics_card.autochoose(instance, surface);
-        if (status != 0) return status;
+        if (status != 0) return 1;
 
         // Initialize logical graphics card object
         status = logical_graphics_card.init(graphics_card.device, surface);     
-        if (status != 0) return status;
+        if (status != 0) return 2;
 
         // Initialize swapchain object
-        status = swapchain.init(graphics_card.device, surface, logical_graphics_card.device);
-        if (status != 0) return status;
+        status = swapchain.init(window, surface, graphics_card.device, logical_graphics_card.device);
+        if (status != 0) return 3;
 
         // Initialize pipeline object
         status = pipeline.init(logical_graphics_card.device, swapchain);
-        if (status != 0) return status;
+        if (status != 0) return 4;
+
+        // Initialize vertex buffer
+        status = vertex_buffer.init(graphics_card.device, logical_graphics_card.device);
+        if (status != 0) return 5;
 
         // Initialize swapchain framebuffers
         status = swapchain.initFramebuffers(pipeline.renderPass);
-        if (status != 0) return status;
+        if (status != 0) return 6;
 
         // Initialize command buffers
-        status = command_buffers.init(graphics_card.device, logical_graphics_card.device, surface, swapchain, pipeline);
-        if (status != 0) return status;
+        status = command_buffers.init(graphics_card.device, logical_graphics_card.device, surface, swapchain, pipeline, vertex_buffer.GetVertexBuffer());
+        if (status != 0) return 7;
 
         return 0;
     }
@@ -167,6 +171,65 @@ namespace Forge {
         int status = 0;
         status = render2D.init(logical_graphics_card, swapchain, pipeline, command_buffers.cmdBuffers);
         if (status != 0) return status;
+
+        return 0;
+    }
+
+    // Reinitialize swapchain
+    int Engine::reinitialize() {
+
+        int width = 0;
+        int height = 0;
+
+        do {
+
+            glfwGetFramebufferSize(window, &width, &height);        // Get framebuffer extent
+            if(width == 0 || height == 0)       // If framebuffer extent is minimized in any way
+                glfwWaitEvents();               // wait for an event and reevaluate framebuffer size
+
+        } while (width == 0 || height == 0);
+
+        vkDeviceWaitIdle(logical_graphics_card.device);         // Wait for device to complete all operations
+
+        swapchain.cleanup();        // Cleanup swapchain
+        pipeline.cleanup();         // Cleanup pipeline
+
+        // Free command buffers before recreation
+        vkFreeCommandBuffers(logical_graphics_card.device, command_buffers.CommandPool, static_cast<uint32_t>(command_buffers.cmdBuffers.size()), command_buffers.cmdBuffers.data());
+
+        auto reinitializeSwapchain = [&]() {
+
+            int status = 0;
+
+            // Reinitialize swapchain object
+            status = swapchain.init(window, surface, graphics_card.device, logical_graphics_card.device);
+            if (status != 0) return 1;
+
+            // Reinitialize pipeline object
+            status = pipeline.init(logical_graphics_card.device, swapchain);
+            if (status != 0) return 2;
+
+            // Reinitialize swapchain framebuffers
+            status = swapchain.initFramebuffers(pipeline.renderPass);
+            if (status != 0) return 3;
+
+            // Reinitialize command buffers
+            status = command_buffers.CreateCommandBuffers(surface, swapchain, pipeline, vertex_buffer.GetVertexBuffer());
+            if (status != 0) return 4;
+
+            render2D.SetComponents(swapchain, pipeline, command_buffers.cmdBuffers);
+
+            return 0;
+        };
+
+        int ret = reinitializeSwapchain();
+        if (ret != 0) {                                                                                                         // If swapchain reinitialization fails
+            std::string msg = "Fatal Error: Failed to reinitialize swapchain with error [" + std::to_string(ret) + "].";        //
+            ASWL::utilities::Logger("E07S0", msg);                                                                              // then log the error
+            return 8;                                                                                                           // and return the corresponding error value
+        }
+
+        return 0;
     }
 
     // Update engine
@@ -177,6 +240,7 @@ namespace Forge {
     // Set render surface clear color
     void Engine::SetClearColor() {
         command_buffers.SetCanvasClearColor(metadata.clearcolor);
+        reinitialize();
     }
 
     // Check if validation layers are supported
@@ -238,7 +302,7 @@ namespace Forge {
         PopulateDebugMessengerCreateInfo(debugCreateInfo);      // Populate the struct
 
         if (CreateDebugUtilsMessengerEXT(instance, &debugCreateInfo, nullptr, &dbgMessenger) != VK_SUCCESS)     // If DebuMessenger creation fails
-            ASWL::utilities::Logger("E07V3", "Error: Failed to setup debug messenger.");                        // Log the message
+            ASWL::utilities::Logger("E08V3", "Error: Failed to setup debug messenger.");                        // Log the message
     }
 
     VkResult Engine::CreateDebugUtilsMessengerEXT(VkInstance instance,                                          // Vulkan Instance
@@ -267,7 +331,7 @@ namespace Forge {
                                                          void* pUsrData)                                                    // Pointer to struct allowing user to pass data
     {
         std::string msg = "Error: Validation Layer -> " + std::string(pCallbackData->pMessage);
-        ASWL::utilities::Logger("E08V4", msg);      // Log the error
+        ASWL::utilities::Logger("VALID", msg);      // Log the error
         return VK_FALSE;
     }
 
@@ -309,11 +373,12 @@ namespace Forge {
     void Engine::cleanup() {
 
         vkDeviceWaitIdle(logical_graphics_card.device);
-
+        
         render2D.cleanup();
-        command_buffers.cleanup();
+        vertex_buffer.cleanup();
         pipeline.cleanup();
         swapchain.cleanup();
+        command_buffers.cleanup();
         logical_graphics_card.cleanup();
 
         vkDestroySurfaceKHR(instance, surface, nullptr);        // Destroy Vulkan surface

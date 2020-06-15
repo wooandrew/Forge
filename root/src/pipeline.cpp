@@ -3,6 +3,8 @@
 #pragma warning(disable : 26812)
 
 #include "pipeline.hpp"
+#include "vertex.hpp"
+#include "forge_vars.hpp"
 
 // Standard Library
 #include <fstream>
@@ -117,12 +119,16 @@ namespace Forge {
 
         VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };      // Pipeline shader stage
 
-        VkPipelineVertexInputStateCreateInfo vertInputInfo = {};                                // vertInputInfo specifies the paramerters of the vertex pipeline input stage
-        vertInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;        // Identify vertInputInfo as structure type PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
-        vertInputInfo.vertexBindingDescriptionCount = 0;                                        // Number of vertex binding descriptions
-        vertInputInfo.pVertexBindingDescriptions = nullptr;                                     // Pointer to structure specifying vertex input binding description
-        vertInputInfo.vertexAttributeDescriptionCount = 0;                                      // Number of vertex attribute descriptions
-        vertInputInfo.pVertexAttributeDescriptions = nullptr;                                   // Pointer to structure specifying vertex attribute descriptions
+        auto bindingDescription = Vertex::GetBindingDescription();
+        auto attributeDescription = Vertex::GetAttributeDesciptions();
+
+        VkPipelineVertexInputStateCreateInfo vertInputInfo = {};                                                    // vertInputInfo specifies the paramerters of the vertex pipeline input stage
+        vertInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;                            // Identify vertInputInfo as structure type PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO
+        vertInputInfo.vertexBindingDescriptionCount = 1;                                                            // Number of vertex binding descriptions
+        vertInputInfo.pVertexBindingDescriptions = &bindingDescription;                                             // Pointer to structure specifying vertex input binding description
+        vertInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescription.size());         // Number of vertex attribute descriptions
+        vertInputInfo.pVertexAttributeDescriptions = attributeDescription.data();                                   // Pointer to structure specifying vertex attribute descriptions
+
 
         VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};                                  // inputAssembly specifies the parameters of the pipeline input assembly
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;          // Identify inputAssembly as structure type PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO

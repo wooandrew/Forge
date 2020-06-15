@@ -1,1 +1,2 @@
-ADD: Validation layers
+ADD: Explicit window resize handling
+ADD: Vulkan Components Container

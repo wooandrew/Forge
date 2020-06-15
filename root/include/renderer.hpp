@@ -32,10 +32,11 @@ namespace Forge {
             Render_3D
         }; RendererType type;
 
-        int init(LogicalDevice& _lgc, Swapchain& _swapchain, Pipeline& _pipeline, std::vector<VkCommandBuffer> _cmdBuffers);        // Initialize renderer
-        void draw();                        // Draw frame
-
+        int init(LogicalDevice& _lgc, Swapchain& _swapchain, Pipeline& _pipeline, std::vector<VkCommandBuffer>& _cmdBuffers);       // Initialize renderer
         void cleanup();     // Cleanup renderer
+
+        int draw();         // Draw frame
+        void SetComponents(Swapchain& _swapchain, Pipeline& _pipeline, std::vector<VkCommandBuffer>& _cmdBuffers);      // Set Vulkan components
 
     private:
 

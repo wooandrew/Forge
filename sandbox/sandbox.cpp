@@ -41,14 +41,22 @@ int main() {
     }
 
     float num = 0;
+    int renderResult = 0;
 
     while (!e.WindowShouldClose()) {
-        e.update();
-        e.render2D.draw();
 
-        num = std::fmod(++num, 255) / 255;
-        e.metadata.clearcolor = { num, num, num, 0.f };
-        e.SetClearColor();
+        e.update();
+        renderResult = e.render2D.draw();
+
+        if (renderResult == 2 || renderResult == 5) {
+            int reinitCode = e.reinitialize();
+            if (reinitCode != 0)
+                return reinitCode;
+        }
+
+        //num++;
+        //e.metadata.clearcolor = { std::fmod(num, 255.f) / 255.f, std::fmod(num, 255.f) / 255.f, std::fmod(num, 255.f) / 255.f, 0.f };
+        //e.SetClearColor();
     }
 
     return 0;

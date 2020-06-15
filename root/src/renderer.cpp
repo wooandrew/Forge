@@ -2,7 +2,7 @@
 
 #pragma warning(disable : 26812)
 
-#include "2D/renderer.hpp"
+#include "renderer.hpp"
 
 // Standard Library
 #include <string>
@@ -22,12 +22,10 @@ namespace Forge {
     }
 
     // Initialize renderer object
-    int Renderer::init(LogicalDevice& _lgc, Swapchain& _swapchain, Pipeline& _pipeline, std::vector<VkCommandBuffer> _cmdBuffers) {
+    int Renderer::init(LogicalDevice& _lgc, Swapchain& _swapchain, Pipeline& _pipeline, std::vector<VkCommandBuffer>& _cmdBuffers) {
 
         logical_graphics_card = _lgc;
-        swapchain = _swapchain;
-        pipeline = _pipeline;
-        cmdBuffers = _cmdBuffers;
+        SetComponents(_swapchain, _pipeline, _cmdBuffers);
 
         if (type == RendererType::Render_2D) {          // If the renderer is a 2D renderer
 
@@ -64,15 +62,29 @@ namespace Forge {
     }
 
     // Draw frame
-    void Renderer::draw() {
+    int Renderer::draw() {
 
         uint32_t imageIndex;                // Image index
         static int currentFrame = 0;        // Current frame
 
+        bool swapchainSubOptimal = false;
+
         vkWaitForFences(logical_graphics_card.device, 1, &InFlightFences[currentFrame], VK_TRUE, UINT64_MAX);       // Wait for fence to finish
 
         // Acquire next image to render from swapchain at imageIndex
-        vkAcquireNextImageKHR(logical_graphics_card.device, swapchain.swapchain, UINT64_MAX, ImageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+        VkResult acquireResult = vkAcquireNextImageKHR(logical_graphics_card.device, swapchain.swapchain, UINT64_MAX, ImageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+
+        if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {                            // If the swapchain goes out of date
+            ASWL::utilities::Logger("R01S0", "Error: Swapchain out of date.");      // then log the error
+            return 2;                                                               // and return the corresponding error value
+        }
+        else if (acquireResult == VK_SUBOPTIMAL_KHR)        // If the swapchain becomes suboptimal
+            swapchainSubOptimal = true;                     // flag swapchain to be reinitialized
+
+        else if (acquireResult != VK_SUCCESS) {                                                                 // If acquiring an image to render from the swapchain fails
+            ASWL::utilities::Logger("R02S1", "Error: Failed to acquire an image from the swapchain.");          // then log the error
+            return 3;                                                                                           // and return the corresponding error value
+        }
 
         if (InFlightImages[imageIndex] != VK_NULL_HANDLE)                                                               // If previous frame is using the fence
             vkWaitForFences(logical_graphics_card.device, 1, &InFlightFences[currentFrame], VK_TRUE, UINT64_MAX);       // then wait for the fence to finish
@@ -98,8 +110,8 @@ namespace Forge {
         vkResetFences(logical_graphics_card.device, 1, &InFlightFences[currentFrame]);      // Reset fence
         
         if (vkQueueSubmit(logical_graphics_card.graphicsQueue, 1, &submitInfo, InFlightFences[currentFrame]) != VK_SUCCESS) {       // If semaphore or command buffer sequence submission to queue fails
-            ASWL::utilities::Logger("R01D0", "Error: Failed to submit semaphore/command buffer sequence to graphics queue.");       // then log the error
-            return;                                                                                                                 // and stop the rendering process
+            ASWL::utilities::Logger("R03D0", "Error: Failed to submit semaphore/command buffer sequence to graphics queue.");       // then log the error
+            return 4;                                                                                                               // and stop the rendering process
         }
 
         VkSwapchainKHR swapchains[] = { swapchain.swapchain };          // List of swapchains
@@ -113,9 +125,31 @@ namespace Forge {
         presentInfo.pImageIndices = &imageIndex;                        // Pointer to image index
         presentInfo.pResults = nullptr;                                 // Optional
 
-        vkQueuePresentKHR(logical_graphics_card.presentQueue, &presentInfo);        // Queue an image to render
+        // Queue an image to render
+        VkResult queuePresentResult = vkQueuePresentKHR(logical_graphics_card.presentQueue, &presentInfo);
+
+        if (queuePresentResult == VK_ERROR_OUT_OF_DATE_KHR) {                       // If the swapchain goes out of date
+            ASWL::utilities::Logger("R01S0", "Error: Swapchain out of date.");      // then log the error
+            return 2;                                                               // and return the corresponding error value
+        }
+        else if (queuePresentResult == VK_SUBOPTIMAL_KHR || swapchainSubOptimal) {                              // If the swapchain becomes suboptimal
+            ASWL::utilities::Logger("R04S2", "Error: Swapcahin is suboptimal and must be reinitialized.");      // then log the error
+            return 5;                                                                                           // and return the corresponding error value
+        }
+        else if (queuePresentResult != VK_SUCCESS) {                                                                    // If acquiring an image to render from the swapchain fails
+            ASWL::utilities::Logger("R05Q0", "Error: Failed to queue an image from the swapchain to render.");          // then log the error
+            return 6;                                                                                                   // and return the corresponding error value
+        }
+
 
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;       // Track which frame is being rendered
+    }
+
+    // Set Vulkan components
+    void Renderer::SetComponents(Swapchain& _swapchain, Pipeline& _pipeline, std::vector<VkCommandBuffer>& _cmdBuffers) {
+        swapchain = _swapchain;
+        pipeline = _pipeline;
+        cmdBuffers = _cmdBuffers;
     }
 
     // Cleanup renderer

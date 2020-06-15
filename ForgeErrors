@@ -6,8 +6,8 @@ Engine
 5   "E04S0", "Fatal Error: Window surface creation failed."
 6   "E05V2", "Fatal Error: An error occured while attempting to initialize Vulkan components [" + status + "]."
 7   "E06R0", "Fatal Error: Failed to initialize renderer with error [" + status + "]."
-X   "E07V3", "Fatal Error: Failed to setup debug messenger."
-X   "E08V4", "Error: Validation Layer ->", msg
+8   "E07S0", "Fatal Error: Failed to reinitialize swapchain with error [" + status + "]."
+X   "E08V3", "Error: Failed to setup debug messenger."
 
 Physical Device
 1   "PD0G0", "Fatal Error: Failed to find GPU that supports Vulkan."
@@ -37,7 +37,18 @@ Command Buffers
 
 Renderer
 1   "2D0S0", "Fatal Error: Failed to create semaphore/fence object at index [" + index + "]."
+2   "R01S0", "Error: Swapchain out of date."
+3   "R02S1", "Error: Failed to acquire an image from the swapchain."
+4   "R03D0", "Error: Failed to submit semaphore/command buffer sequence to graphics queue."
+5   "R04S2", "Error: Swapcahin is suboptimal and must be reinitialized."
+6   "R05Q0", "Error: Failed to queue an image from the swapchain to render."
+
+Vertex
+1   "V0000", "Fatal Error: Vertex buffer creation failed."
+2   "V01M0", "Fatal Error: Failed to find a suitable memory type."
+3   "V02M1", "Fatal Error: Failed to allocate memory for the vertex buffer."
 
 Miscellaneous
+ X  "VALID", "Error: Validation Layer ->", msg
 -1  "XXR3D", "3D Rendering is not yet supported."                   -> Init 3D Renderer
 -1  "XXP6S", "Fatal Error: Only SPIR-V is currently supported."     -> Pipeline 6 shader 3 -> GLSL shader compile

@@ -21,9 +21,10 @@
 #include "logical_devices.hpp"
 #include "swapchain.hpp"
 #include "pipeline.hpp"
+#include "vertex.hpp"
 #include "command_buffers.hpp"
 
-#include "2D/renderer.hpp"
+#include "renderer.hpp"
 
 namespace Forge {    // Wrapper namespace
 
@@ -46,7 +47,7 @@ namespace Forge {    // Wrapper namespace
 
             // GLFW window initialization metadata
             std::vector<std::pair<int, int>> windowHints{ { std::make_pair(GLFW_CLIENT_API, GLFW_NO_API),               // Window hints _ default (GLFW_CLIENT_API, GLFW_NO_API)
-                                                            std::make_pair(GLFW_RESIZABLE, GLFW_FALSE) } };             // Window hints _ default (GLFW_RESIZABLE, GLFW_FALSE)
+                                                            std::make_pair(GLFW_RESIZABLE, GLFW_TRUE) } };             // Window hints _ default (GLFW_RESIZABLE, GLFW_FALSE)
 
             const char* windowTitle{ "vkForgeDefault" };                                                                // Window title
             ASWL::utilities::Dimensions2D<int> windowDimensions{ ASWL::utilities::make_2d_dimension(1000, 600) };       // Window dimensions (x, y)
@@ -56,6 +57,7 @@ namespace Forge {    // Wrapper namespace
         int init();             // Initialize the engine. This function must be called before the engine is used.
         int initVulkan();       // Initialize Vulkan components of the engine. If metadata.autoinit is disabled, Vulkan components must be initialized manually.
         int initRenderer();     // Initialize graphics renderer
+        int reinitialize();     // Reinitialize swapchain
 
         void update();          // Update the engine. This function should be called every iteration.
         void cleanup();         // Cleanup Engine, Vulkan, and GLFW
@@ -84,7 +86,8 @@ namespace Forge {    // Wrapper namespace
         LogicalDevice logical_graphics_card;        // Logical graphics card object
         Swapchain swapchain;                        // Swapchain object
         Pipeline pipeline;                          // Pipeline object
-        CommandBuffers command_buffers;             // Command buffer objects
+        VertexBuffer vertex_buffer;                 // Vertex buffer object
+        CommandBuffers command_buffers;             // Command buffers object
 
 
         // *** Start Validation Layer stuff ***************************************************************************************************************************************

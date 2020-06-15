@@ -7,6 +7,34 @@
 
 namespace Forge {
 
+    // Create a vertex binding description
+    VkVertexInputBindingDescription Vertex::GetBindingDescription() {
+
+        VkVertexInputBindingDescription bindingDescription = {};            // Structure specifies input vertex binding parameters
+        bindingDescription.binding = 0;                                     // Binding index in vertex binding array
+        bindingDescription.stride = sizeof(Vertex);                         // Distance between elements within buffer
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;         // Specify whether vertex attribute is a function of vertex index or instance index
+
+        return bindingDescription;
+    }
+
+    // Array of vertex attribute descriptions
+    std::array<VkVertexInputAttributeDescription, 2> Vertex::GetAttributeDesciptions() {
+
+        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions = {};        // Array of vertex attribute descriptions
+        attributeDescriptions[0].binding = 0;                                               // Binding number which attribute recieves data from
+        attributeDescriptions[0].location = 0;                                              // Shader binding location
+        attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;                          // Size/type of vertex attribute data
+        attributeDescriptions[0].offset = offsetof(Vertex, position);                       // Offset of attribute relative to start of vertex input binding
+
+        attributeDescriptions[1].binding = 0;                                               // Binding number which attribute recieves data from
+        attributeDescriptions[1].location = 1;                                              // Shader binding location
+        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;                       // Size/type of vertex attribute data
+        attributeDescriptions[1].offset = offsetof(Vertex, color);                          // Offset of attribute relative to start of vertex input binding
+
+        return attributeDescriptions;
+    }
+
     // Function determines if all optional values in QueueFamilyIndices has a value
     bool QueueFamilyIndices::hasValue() {
         return graphicsFamily.has_value() && presentFamily.has_value();

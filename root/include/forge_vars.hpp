@@ -6,6 +6,7 @@
 #define THEFORGE_VARS
 
 // Standard Library
+#include <array>
 #include <vector>
 #include <utility>
 #include <optional>
@@ -13,6 +14,7 @@
 // Dependencies
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <GLM/glm.hpp>
 
 namespace Forge {
 
@@ -27,6 +29,24 @@ namespace Forge {
     static const std::vector<const char*> DeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };           // List of device extensions to enable
 
     constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+
+    struct Vertex {
+
+        glm::vec2 position;         // Vertex position in 2D space
+        glm::vec3 color;            // Vertex color
+
+        // Create a vertex binding description
+        static VkVertexInputBindingDescription GetBindingDescription();
+
+        // Array of vertex attribute descriptions
+        static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDesciptions();
+    };
+
+    const std::vector<Vertex> vertices = {
+            {{ 0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+            {{ 0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
+            {{-0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}}
+    };
 
     struct QueueFamilyIndices {                         // Struct containing Queue Family indices
 
