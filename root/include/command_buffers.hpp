@@ -22,13 +22,13 @@ namespace Forge {
 
     public:
 
-        friend class Engine;
+        friend class VkContainer;
 
         CommandBuffers();       // Default constructor
         ~CommandBuffers();      // Default destructor
 
-        int init(VkPhysicalDevice& _graphicscard, VkDevice& _device, VkSurfaceKHR& _surface, Swapchain& _swapchain, Pipeline& _pipeline, VkBuffer& _vertexbuffer);       // CommandBuffers initializer
-        int CreateCommandBuffers(VkSurfaceKHR& _surface, Swapchain& _swapchain, Pipeline& _pipeline, VkBuffer& _vertexbuffer);                                           // Create command buffers
+        int init(VkPhysicalDevice& _graphicscard, VkDevice& _device, VkSurfaceKHR& _surface, Swapchain& _swapchain, Pipeline& _pipeline, VkBuffer& _buffer);        // CommandBuffers initializer
+        int CreateCommandBuffers(VkSurfaceKHR& _surface, Swapchain& _swapchain, Pipeline& _pipeline, VkBuffer& _buffer);                                            // Create command buffers
 
         void cleanup();
 

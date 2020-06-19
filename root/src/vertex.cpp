@@ -26,58 +26,29 @@ namespace Forge {
 
         device = _device;
 
-        VkBufferCreateInfo bufferInfo = {};                             // bufferInfo specifies the parameters of the VertexBuffer object
-        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;        // Specify bufferInfo as structure type BUFFER_CREATE_INFO
-        bufferInfo.size = sizeof(vertices[0]) * vertices.size();        // Size of buffer in bytes
-        bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;           // Specify allowed buffer usage
-        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;             // Specify if buffer can be shared or not between queue families
-        
-        if (vkCreateBuffer(device, &bufferInfo, nullptr, &vertexbuffer) != VK_SUCCESS) {            // If Vertex Buffer creation fails
-            ASWL::utilities::Logger("V0000", "Fatal Error: Vertex buffer creation failed.");        // then log the error
-            return 1;                                                                               // and return the corresponding error value
+        // Vertex buffer size
+        VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+
+        VkBuffer stagingBuffer;                     // Temporary vertex buffer object
+        VkDeviceMemory stagingBufferMemory;         // Temporary vertex buffer memory
+
+        // Create a staging buffer object
+        if (CreateBuffer(_graphicscard, device, bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |         // If vertex staging buffer creation fails
+                         VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory) != VK_SUCCESS) {                         //
+            ASWL::utilities::Logger("V00B0", "Fatal Error: Failed to create the staging buffer.");                                          // then log the error
+            return 1;                                                                                                                       // and return the corresponding error value
         }
-
-        VkMemoryRequirements memoryRequirements;                                        // Structure specifies memory requirements of vertex buffer
-        vkGetBufferMemoryRequirements(device, vertexbuffer, &memoryRequirements);       // Get vertex buffer memory requirements and fill structure
-
-        // Lambda function to find a suitable memory type to assign to the vertex buffer
-        auto FindMemoryType = [](VkPhysicalDevice& device, uint32_t typeFilter, VkMemoryPropertyFlags properties) {
-
-            VkPhysicalDeviceMemoryProperties memProperties;                     // Structure specifies the memory properties of the graphics card
-            vkGetPhysicalDeviceMemoryProperties(device, &memProperties);        // Get graphics card memory properties and fill structure
-
-            // Iterate through every type of memory supported by the device
-            for (int i = 0; i < memProperties.memoryTypeCount; i++) {
-                if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)     // If a suitable memory type is found
-                    return i;                                                                                               // return the type index
-            }
-
-            return -1;      // Return an error if a suitable memory type is not found.
-        };
-
-        // Find a suitable memory type to assign to the vertex buffer
-        int memory = FindMemoryType(_graphicscard, memoryRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-        if (memory == -1) {                                                                                 // If a suitable memory type is not found
-            ASWL::utilities::Logger("V01M0", "Fatal Error: Failed to find a suitable memory type.");        // then log the error
-            return 2;                                                                                       // and return the corresponding error value
-        }
-
-        VkMemoryAllocateInfo allocInfo = {};                                // allocInfo specifies the parameters of vertex buffer memory allocation
-        allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;           // Specify allocInfo as structure type MEMORY_ALLOCATE_INFO
-        allocInfo.allocationSize = memoryRequirements.size;                 // Set memory allocation size
-        allocInfo.memoryTypeIndex = static_cast<uint32_t>(memory);          // Set memory type index
-
-        if (vkAllocateMemory(device, &allocInfo, nullptr, &VertexBufferMemory) != VK_SUCCESS) {                     // If allocation of vertex buffer memory fails
-            ASWL::utilities::Logger("V02M1", "Fatal Error: Failed to allocate memory for the vertex buffer.");      // then log the error
-            return 3;                                                                                               // and return the corresponding error value
-        }
-
-        vkBindBufferMemory(device, vertexbuffer, VertexBufferMemory, 0);        // Bind the allocated memory to the vertex buffer
 
         void* data;
-        vkMapMemory(device, VertexBufferMemory, 0, bufferInfo.size, 0, &data);      // Map memory to VertexBufferMemory
-        memcpy(data, vertices.data(), (size_t)bufferInfo.size);                     // Copy data from vertices to data
-        vkUnmapMemory(device, VertexBufferMemory);                                  // Unmap previously mapped data from VertexBufferMemory
+        vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);      // Map memory to staging buffer memory
+        memcpy(data, vertices.data(), (size_t)bufferSize);                      // Copy data from vertices to data
+        vkUnmapMemory(device, stagingBufferMemory);                             // Unmap previously mapped data from VertexBufferMemory
+
+        if(CreateBuffer(_graphicscard, device, bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,        // If vertex buffer creation fails
+                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexbuffer, VertexBufferMemory) != VK_SUCCESS) {                         //
+            ASWL::utilities::Logger("V01B1", "Fatal Error: Failed to create the vertex buffer.");                                       // then log the error
+            return 2;                                                                                                                   // and return the corresponding error value
+        }
 
         return 0;
     }

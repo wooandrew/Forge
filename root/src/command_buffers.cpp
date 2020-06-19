@@ -21,7 +21,7 @@ namespace Forge {
     }
 
     // Initialize command buffers
-    int CommandBuffers::init(VkPhysicalDevice& _graphicscard, VkDevice& _device, VkSurfaceKHR& _surface, Swapchain& _swapchain, Pipeline& _pipeline, VkBuffer& _vertexbuffer) {
+    int CommandBuffers::init(VkPhysicalDevice& _graphicscard, VkDevice& _device, VkSurfaceKHR& _surface, Swapchain& _swapchain, Pipeline& _pipeline, VkBuffer& _buffer) {
 
         device = _device;
 
@@ -37,13 +37,13 @@ namespace Forge {
             return 1;                                                                                   // and return the corresponding value
         }
 
-        int status = CreateCommandBuffers(_surface, _swapchain, _pipeline, _vertexbuffer);
+        int status = CreateCommandBuffers(_surface, _swapchain, _pipeline, _buffer);
 
         return status;
     }
 
     // Create command buffers
-    int CommandBuffers::CreateCommandBuffers(VkSurfaceKHR& _surface, Swapchain& _swapchain, Pipeline& _pipeline, VkBuffer& _vertexbuffer) {
+    int CommandBuffers::CreateCommandBuffers(VkSurfaceKHR& _surface, Swapchain& _swapchain, Pipeline& _pipeline, VkBuffer& _buffer) {
 
         cmdBuffers.resize(_swapchain.GetFramebuffers().size());         // Resize command buffers list to match framebuffers size
 
@@ -79,12 +79,12 @@ namespace Forge {
             renderpassBeginInfo.clearValueCount = 1;                                    // Number of elements in pClearValue
             renderpassBeginInfo.pClearValues = &clearCanvasColor;                       // List of canvas clear values
 
-            VkBuffer vertexBuffers[] = { _vertexbuffer };       // Array of vertex buffers
-            VkDeviceSize offsets[] = { 0 };                     // Vulkan device memory size/offset
+            VkBuffer buffers[] = { _buffer };       // Array of vertex buffers
+            VkDeviceSize offsets[] = { 0 };         // Vulkan device memory size/offset
 
             vkCmdBeginRenderPass(cmdBuffers[i], &renderpassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);                      // Start a new render pass
             vkCmdBindPipeline(cmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, _pipeline.GetGraphicsPipeline());         // Bind pipeline object to command buffer
-            vkCmdBindVertexBuffers(cmdBuffers[i], 0, 1, vertexBuffers, offsets);                                        // Bind vertex buffer
+            vkCmdBindVertexBuffers(cmdBuffers[i], 0, 1, buffers, offsets);                                              // Bind vertex buffer
             vkCmdDraw(cmdBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);                                  // Draw primitive
             vkCmdEndRenderPass(cmdBuffers[i]);                                                                          // End render pass
 

@@ -48,6 +48,11 @@ namespace Forge {
             {{-0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}}
     };
 
+    // Create buffer object
+    int CreateBuffer(VkPhysicalDevice& _graphicscard, VkDevice& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+    // Copy buffer from source to destination
+    void CopyBuffer(VkDevice& device, VkCommandPool& cmdPool, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+
     struct QueueFamilyIndices {                         // Struct containing Queue Family indices
 
         std::optional<uint32_t> graphicsFamily;         // Index for graphics queue family

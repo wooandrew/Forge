@@ -143,6 +143,8 @@ namespace Forge {
 
 
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;       // Track which frame is being rendered
+
+        return 0;
     }
 
     // Set Vulkan components

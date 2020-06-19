@@ -18,7 +18,7 @@ namespace Forge {
 
     public:
 
-        friend class Engine;
+        friend class VkContainer;
         friend class Renderer;
 
         LogicalDevice();        // Default constructor

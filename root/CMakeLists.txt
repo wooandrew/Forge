@@ -17,7 +17,7 @@ add_library(libforge SHARED
     "include/pipeline.hpp"              "src/pipeline.cpp"              
     "include/command_buffers.hpp"       "src/command_buffers.cpp"
     "include/renderer.hpp"              "src/renderer.cpp"
-    "include/vertex.hpp"                "src/vertex.cpp")
+    "include/vertex.hpp"                "src/vertex.cpp" "src/vkcontainer.cpp" "include/vkcontainer.hpp")
 
 include(GenerateExportHeader)
 generate_export_header(libforge)

@@ -6,8 +6,10 @@ Engine
 5   "E04S0", "Fatal Error: Window surface creation failed."
 6   "E05V2", "Fatal Error: An error occured while attempting to initialize Vulkan components [" + status + "]."
 7   "E06R0", "Fatal Error: Failed to initialize renderer with error [" + status + "]."
-8   "E07S0", "Fatal Error: Failed to reinitialize swapchain with error [" + status + "]."
-X   "E08V3", "Error: Failed to setup debug messenger."
+X   "E07V3", "Error: Failed to setup debug messenger."
+
+VkContainer
+1   "VKC00", "Fatal Error: Failed to reinitialize swapchain with error [" + status + "]."
 
 Physical Device
 1   "PD0G0", "Fatal Error: Failed to find GPU that supports Vulkan."
@@ -44,11 +46,14 @@ Renderer
 6   "R05Q0", "Error: Failed to queue an image from the swapchain to render."
 
 Vertex
-1   "V0000", "Fatal Error: Vertex buffer creation failed."
-2   "V01M0", "Fatal Error: Failed to find a suitable memory type."
-3   "V02M1", "Fatal Error: Failed to allocate memory for the vertex buffer."
+1   "V00B0", "Fatal Error: Failed to create the staging buffer."
+2   "V01B1", "Fatal Error: Failed to create the vertex buffer."
+
 
 Miscellaneous
+ 1  "B0000", "Fatal Error: Buffer creation failed."
+ 2  "B0002", "Fatal Error: Failed to find a suitable memory type."
+ 3  "B0003", "Fatal Error: Failed to allocate memory for the buffer."
  X  "VALID", "Error: Validation Layer ->", msg
 -1  "XXR3D", "3D Rendering is not yet supported."                   -> Init 3D Renderer
 -1  "XXP6S", "Fatal Error: Only SPIR-V is currently supported."     -> Pipeline 6 shader 3 -> GLSL shader compile

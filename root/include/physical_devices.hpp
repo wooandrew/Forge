@@ -19,7 +19,7 @@ namespace Forge {
 
     public:
 
-        friend class Engine;
+        friend class VkContainer;
 
         GraphicsCard();         // Default Constructor
         ~GraphicsCard();        // Default Destructor

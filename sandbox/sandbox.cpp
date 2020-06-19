@@ -46,13 +46,9 @@ int main() {
     while (!e.WindowShouldClose()) {
 
         e.update();
-        renderResult = e.render2D.draw();
+        e.draw();
 
-        if (renderResult == 2 || renderResult == 5) {
-            int reinitCode = e.reinitialize();
-            if (reinitCode != 0)
-                return reinitCode;
-        }
+        
 
         //num++;
         //e.metadata.clearcolor = { std::fmod(num, 255.f) / 255.f, std::fmod(num, 255.f) / 255.f, std::fmod(num, 255.f) / 255.f, 0.f };

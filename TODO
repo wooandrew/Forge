@@ -1,2 +1,3 @@
 ADD: Explicit window resize handling
 ADD: Vulkan Components Container
+FIX: Individual memory allocation -> GPUOpen

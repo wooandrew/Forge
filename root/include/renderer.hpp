@@ -20,6 +20,11 @@
 
 namespace Forge {
 
+    enum class RendererType {       // Renderer type
+        Render_2D,
+        Render_3D
+    };
+
     class Renderer {
 
     public:
@@ -27,16 +32,14 @@ namespace Forge {
         Renderer();         // Default constructor
         ~Renderer();        // Default destructor
 
-        enum class RendererType {       // Renderer type
-            Render_2D,
-            Render_3D
-        }; RendererType type;
-
         int init(LogicalDevice& _lgc, Swapchain& _swapchain, Pipeline& _pipeline, std::vector<VkCommandBuffer>& _cmdBuffers);       // Initialize renderer
         void cleanup();     // Cleanup renderer
 
         int draw();         // Draw frame
         void SetComponents(Swapchain& _swapchain, Pipeline& _pipeline, std::vector<VkCommandBuffer>& _cmdBuffers);      // Set Vulkan components
+
+        // Renderer type
+        RendererType type;
 
     private:
 

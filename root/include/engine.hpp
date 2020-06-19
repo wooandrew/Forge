@@ -17,14 +17,7 @@
 
 // TheForge includes
 #include "forge_vars.hpp"
-#include "physical_devices.hpp"
-#include "logical_devices.hpp"
-#include "swapchain.hpp"
-#include "pipeline.hpp"
-#include "vertex.hpp"
-#include "command_buffers.hpp"
-
-#include "renderer.hpp"
+#include "vkcontainer.hpp"
 
 namespace Forge {    // Wrapper namespace
 
@@ -38,29 +31,29 @@ namespace Forge {    // Wrapper namespace
         struct Metadata {       // This struct contains the metadata for the engine/glfwWindow. The data inside should be set BEFORE the engine is initialized.
 
             // Engine metadata
-            bool autoinit{ true };     // Automatically initialize engine components
-            VkClearValue clearcolor = { 1.f, 1.f, 1.f, 0.f };          // Render surface clear color
+            bool autoinit = true;       // Automatically initialize engine components
+
+            VkClearValue clearcolor = { 1.f, 1.f, 1.f, 0.f };       // Render surface clear color
+            RendererType rendermode = RendererType::Render_2D;      // Engine render mode
 
             // Vulkan initialization metadata
-            const char* vkAppName{ "vkForgeDefault" };      // VkApp app name
+            const char* vkAppName = "vkForgeDefault";       // VkApp app name
             ASWL::utilities::Version version;               // Application version
 
             // GLFW window initialization metadata
             std::vector<std::pair<int, int>> windowHints{ { std::make_pair(GLFW_CLIENT_API, GLFW_NO_API),               // Window hints _ default (GLFW_CLIENT_API, GLFW_NO_API)
-                                                            std::make_pair(GLFW_RESIZABLE, GLFW_TRUE) } };             // Window hints _ default (GLFW_RESIZABLE, GLFW_FALSE)
+                                                            std::make_pair(GLFW_RESIZABLE, GLFW_TRUE) } };              // Window hints _ default (GLFW_RESIZABLE, GLFW_FALSE)
 
-            const char* windowTitle{ "vkForgeDefault" };                                                                // Window title
+            const char* windowTitle = "vkForgeDefault";                                                                 // Window title
             ASWL::utilities::Dimensions2D<int> windowDimensions{ ASWL::utilities::make_2d_dimension(1000, 600) };       // Window dimensions (x, y)
 
         }; Metadata metadata;
 
         int init();             // Initialize the engine. This function must be called before the engine is used.
-        int initVulkan();       // Initialize Vulkan components of the engine. If metadata.autoinit is disabled, Vulkan components must be initialized manually.
-        int initRenderer();     // Initialize graphics renderer
-        int reinitialize();     // Reinitialize swapchain
-
-        void update();          // Update the engine. This function should be called every iteration.
         void cleanup();         // Cleanup Engine, Vulkan, and GLFW
+
+        void update();          // Reinitialize swapchain Update the engine. This function should be called every iteration.
+        void draw();            // Draw frames
 
         void SetClearColor();       // Set canvas clear color
 
@@ -69,8 +62,6 @@ namespace Forge {    // Wrapper namespace
         VkSurfaceKHR& GetSurface();             // Returns the Vulkan surface
 
         bool WindowShouldClose() const;         // Return if window should close
-
-        Renderer render2D;      // 2D Renderer
 
     private:
 
@@ -82,12 +73,7 @@ namespace Forge {    // Wrapper namespace
 
         std::vector<const char*> GetRequiredExtensions();       // Returns extensions required by application including GLFW
 
-        GraphicsCard graphics_card;                 // Physical graphics card object
-        LogicalDevice logical_graphics_card;        // Logical graphics card object
-        Swapchain swapchain;                        // Swapchain object
-        Pipeline pipeline;                          // Pipeline object
-        VertexBuffer vertex_buffer;                 // Vertex buffer object
-        CommandBuffers command_buffers;             // Command buffers object
+        VkContainer container;      // Container for Engine's Vulkan components
 
 
         // *** Start Validation Layer stuff ***************************************************************************************************************************************

@@ -27,10 +27,11 @@ namespace Forge {
         VkBuffer& GetVertexBuffer();        // Returns vertex buffer
 
     private:
-        VkBuffer vertexbuffer;                      // Handle to buffer object
-        VkDeviceMemory VertexBufferMemory;          // Handle to device memory object
 
-        VkDevice device;                // Handle to logical device object
+        VkBuffer vertexbuffer;                  // Handle to buffer object
+        VkDeviceMemory VertexBufferMemory;      // Handle to device memory object
+
+        VkDevice device;        // Handle to logical device object
     };
 }
 
