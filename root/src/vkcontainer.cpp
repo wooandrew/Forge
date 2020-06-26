@@ -15,28 +15,30 @@ namespace Forge {
 
     }
 
-    int VkContainer::autoinit(GLFWwindow* window, VkInstance& instance, VkSurfaceKHR& surface) {
+    int VkContainer::autoinit(GLFWwindow* window, std::shared_ptr<Core::EngineCore> _EngineCore) {
 
         int status = 0;         // Vulkan initialization status
 
         // Automatically choose a suitable graphics card to use
-        status = gc.autochoose(instance, surface);
-        if (status != 0) return 1;
+        //status = gc.autochoose(instance, surface);
+        //if (status != 0) return 1;
+        //
+        //// Initialize logical graphics card object
+        //status = ld.init(gc.device, surface);
+        //if (status != 0) return 2;
 
-        // Initialize logical graphics card object
-        status = ld.init(gc.device, surface);
-        if (status != 0) return 2;
+        EngineCore = _EngineCore;
 
         // Initialize swapchain object
-        status = sc.init(window, surface, gc.device, ld.device);
+        status = sc.init(window, EngineCore->surface, EngineCore->GetPGPU(), EngineCore->GetLGPU());
         if (status != 0) return 3;
 
         // Initialize pipeline object
-        status = pl.init(ld.device, sc);
+        status = pl.init(EngineCore->GetLGPU(), sc);
         if (status != 0) return 4;
 
         // Initialize vertex buffer
-        status = vb.init(gc.device, ld.device);
+        status = vb.init(EngineCore->GetPGPU(), EngineCore->GetLGPU());
         if (status != 0) return 5;
 
         // Initialize swapchain framebuffers
@@ -44,7 +46,7 @@ namespace Forge {
         if (status != 0) return 6;
 
         // Initialize command buffers
-        status = cb.init(gc.device, ld.device, surface, sc, pl, vb.GetVertexBuffer());
+        status = cb.init(EngineCore->GetPGPU(), EngineCore->GetLGPU(), EngineCore->surface, sc, pl, vb.GetVertexBuffer());
         if (status != 0) return 7;
 
         return 0;
@@ -53,7 +55,7 @@ namespace Forge {
     // Initialize graphics renderer
     int VkContainer::initRenderer() {
 
-        int status = render2D.init(ld, sc, pl, cb.cmdBuffers);
+        int status = render2D.init(EngineCore->GetLGPU(), sc, pl, cb.cmdBuffers);
         if (status != 0) return status;
 
         return 0;
@@ -73,24 +75,24 @@ namespace Forge {
 
         } while (width == 0 || height == 0);
 
-        vkDeviceWaitIdle(ld.device);        // Wait for device to complete all operations
+        vkDeviceWaitIdle(EngineCore->GetLGPU());        // Wait for device to complete all operations
 
         sc.cleanup();       // Cleanup swapchain
         pl.cleanup();       // Cleanup pipeline
 
         // Free command buffers before recreation
-        vkFreeCommandBuffers(ld.device, cb.CommandPool, static_cast<uint32_t>(cb.cmdBuffers.size()), cb.cmdBuffers.data());
+        vkFreeCommandBuffers(EngineCore->GetLGPU(), cb.CommandPool, static_cast<uint32_t>(cb.cmdBuffers.size()), cb.cmdBuffers.data());
 
         auto reinitializeSwapchain = [&]() {
 
             int status = 0;
 
             // Reinitialize swapchain object
-            status = sc.init(window, surface, gc.device, ld.device);
+            status = sc.init(window, surface, EngineCore->GetPGPU(), EngineCore->GetLGPU());
             if (status != 0) return 1;
 
             // Reinitialize pipeline object
-            status = pl.init(ld.device, sc);
+            status = pl.init(EngineCore->GetLGPU(), sc);
             if (status != 0) return 2;
 
             // Reinitialize swapchain framebuffers
@@ -118,7 +120,7 @@ namespace Forge {
 
     void VkContainer::cleanup() {
 
-        vkDeviceWaitIdle(ld.device);
+        vkDeviceWaitIdle(EngineCore->GetLGPU());
 
         render2D.cleanup();
 
@@ -126,6 +128,6 @@ namespace Forge {
         pl.cleanup();
         sc.cleanup();
         cb.cleanup();
-        ld.cleanup();
+        //ld.cleanup();
     }
 }

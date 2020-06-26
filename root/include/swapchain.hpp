@@ -15,17 +15,6 @@
 
 namespace Forge {
 
-    struct SwapChainSupportDetails {                    // Struct containing Swap Chain support details
-
-        VkSurfaceCapabilitiesKHR capabilities;          // Struct containing details of the capabilities of the swap chains
-        std::vector<VkSurfaceFormatKHR> formats;        // List of structures describing a supported swapchain format-color space pair
-        std::vector<VkPresentModeKHR> presentModes;     // List of presentation modes supported by the device
-    };
-    SwapChainSupportDetails QuerySwapChainSupport(VkPhysicalDevice& device, VkSurfaceKHR& surface);             // Populates SwapChainSupportDetails
-    VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);        // Choose surface format
-    VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);         // Choose surface present mode
-    VkExtent2D ChooseSwapExtent(GLFWwindow* window, const VkSurfaceCapabilitiesKHR& capabilities);              // Choose swap extent -> surface resolution
-
     // Swapchain class
     class Swapchain {
         

@@ -8,6 +8,7 @@
 // Standard Library
 #include <string>
 #include <vector>
+#include <memory>
 #include <utility>
 
 // Dependencies
@@ -18,6 +19,7 @@
 // TheForge includes
 #include "forge_vars.hpp"
 #include "vkcontainer.hpp"
+#include "core/core.hpp"
 
 namespace Forge {    // Wrapper namespace
 
@@ -63,45 +65,14 @@ namespace Forge {    // Wrapper namespace
 
         bool WindowShouldClose() const;         // Return if window should close
 
+        const ASWL::utilities::Version version;     // Engine version
+
     private:
 
-        ASWL::utilities::Version version;       // Engine version
-
-        GLFWwindow* window;         // GLFW Window ... it's just the window.
-        VkInstance instance;        // Vulkan instance
-        VkSurfaceKHR surface;       // Vulkan window surface
-
-        std::vector<const char*> GetRequiredExtensions();       // Returns extensions required by application including GLFW
+        GLFWwindow* window;                                 // GLFW Window ... it's just the window.
+        std::shared_ptr<Core::EngineCore> core;       // TheForge Engine core
 
         VkContainer container;      // Container for Engine's Vulkan components
-
-
-        // *** Start Validation Layer stuff ***************************************************************************************************************************************
-        bool AllValidationLayersSupported();            // Check if all validation layers are supported
-        VkDebugUtilsMessengerEXT dbgMessenger;          // Debug Callback handler
-
-        // Setup Debug handler
-        void SetupDebugMessenger();
-
-        // Create Debug Message Handler
-        VkResult CreateDebugUtilsMessengerEXT(VkInstance instance,                                              // Vulkan Instance
-                                              const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo,            // Pointer to createDebugInfo struct
-                                              const VkAllocationCallbacks* pAllocator,                          // Pointer to struct containing memory allocation data
-                                              VkDebugUtilsMessengerEXT* pDebugMessenger);                       // Messenger object that passes debug message to callback
-
-        static void PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& debugCreateInfo);      // Populate Debug Create Info
-
-        // Destroy Debug Message Handler
-        void DestroyDebugUtilsMessengerEXT(VkInstance instance,                             // Vulkan Instance
-                                           VkDebugUtilsMessengerEXT debugMessenger,         // Messenger object that passes debug message to callback
-                                           const VkAllocationCallbacks* pAllocator);        // Pointer to struct containing memory allocation data
-
-        // Validation Layer debug callback
-        static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT msgSeverity,             // Report severity (diagnostic, info, warning, error)
-                                                            VkDebugUtilsMessageTypeFlagsEXT msgType,                        // Type of report
-                                                            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,      // Pointer to struct containing report details
-                                                            void* pUsrData);                                                // Pointer to struct allowing user to pass data
-        // *** End validation layer stuff *****************************************************************************************************************************************
     };
 }
 
