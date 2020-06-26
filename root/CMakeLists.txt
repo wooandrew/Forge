@@ -11,13 +11,16 @@ add_library(libforge SHARED
     "include/forge.hpp"                 "src/forge.cpp"
     "include/forge_vars.hpp"            "src/forge_vars.cpp"
     "include/engine.hpp"                "src/engine.cpp"
-    "include/physical_devices.hpp"      "src/physical_devices.cpp"
-    "include/logical_devices.hpp"       "src/logical_devices.cpp"
+    #"include/archive/physical_devices.hpp"      "src/archive/physical_devices.cpp"
+    #"include/archive/logical_devices.hpp"       "src/archive/logical_devices.cpp"
     "include/swapchain.hpp"             "src/swapchain.cpp"
     "include/pipeline.hpp"              "src/pipeline.cpp"              
     "include/command_buffers.hpp"       "src/command_buffers.cpp"
     "include/renderer.hpp"              "src/renderer.cpp"
-    "include/vertex.hpp"                "src/vertex.cpp" "src/vkcontainer.cpp" "include/vkcontainer.hpp")
+    "include/vertex.hpp"                "src/vertex.cpp" 
+    "include/vkcontainer.hpp"           "src/vkcontainer.cpp"  
+    "include/core/core.hpp"             "src/core/core.cpp"
+    "include/core/graphicscard.hpp"     "src/core/graphicscard.cpp" )
 
 include(GenerateExportHeader)
 generate_export_header(libforge)

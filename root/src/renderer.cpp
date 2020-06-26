@@ -22,7 +22,7 @@ namespace Forge {
     }
 
     // Initialize renderer object
-    int Renderer::init(LogicalDevice& _lgc, Swapchain& _swapchain, Pipeline& _pipeline, std::vector<VkCommandBuffer>& _cmdBuffers) {
+    int Renderer::init(VkDevice& _lgc, Swapchain& _swapchain, Pipeline& _pipeline, std::vector<VkCommandBuffer>& _cmdBuffers) {
 
         logical_graphics_card = _lgc;
         SetComponents(_swapchain, _pipeline, _cmdBuffers);
@@ -43,9 +43,9 @@ namespace Forge {
             
             for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 
-                if (vkCreateSemaphore(_lgc.device, &semaphoreCreateInfo, nullptr, &ImageAvailableSemaphores[i]) != VK_SUCCESS ||        // If ImageAvailable semaphore creation fails
-                    vkCreateSemaphore(_lgc.device, &semaphoreCreateInfo, nullptr, &RenderFinishedSemaphores[i]) != VK_SUCCESS ||        // or RenderFinished semaphore creation fails
-                    vkCreateFence(_lgc.device, &fenceCreateInfo, nullptr, &InFlightFences[i]) != VK_SUCCESS) {                          // or fence creation fails
+                if (vkCreateSemaphore(_lgc, &semaphoreCreateInfo, nullptr, &ImageAvailableSemaphores[i]) != VK_SUCCESS ||        // If ImageAvailable semaphore creation fails
+                    vkCreateSemaphore(_lgc, &semaphoreCreateInfo, nullptr, &RenderFinishedSemaphores[i]) != VK_SUCCESS ||        // or RenderFinished semaphore creation fails
+                    vkCreateFence(_lgc, &fenceCreateInfo, nullptr, &InFlightFences[i]) != VK_SUCCESS) {                          // or fence creation fails
 
                     std::string msg = "Fatal Error: Failed to create semaphore/fence object at index [" + std::to_string(i) + "].";         //
                     ASWL::utilities::Logger("2D0S0", msg);                                                                                  // then log the error
@@ -62,17 +62,17 @@ namespace Forge {
     }
 
     // Draw frame
-    int Renderer::draw() {
+    int Renderer::draw(VkQueue& _graphicsQueue, VkQueue& _presentQueue) {
 
         uint32_t imageIndex;                // Image index
         static int currentFrame = 0;        // Current frame
 
         bool swapchainSubOptimal = false;
 
-        vkWaitForFences(logical_graphics_card.device, 1, &InFlightFences[currentFrame], VK_TRUE, UINT64_MAX);       // Wait for fence to finish
+        vkWaitForFences(logical_graphics_card, 1, &InFlightFences[currentFrame], VK_TRUE, UINT64_MAX);       // Wait for fence to finish
 
         // Acquire next image to render from swapchain at imageIndex
-        VkResult acquireResult = vkAcquireNextImageKHR(logical_graphics_card.device, swapchain.swapchain, UINT64_MAX, ImageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
+        VkResult acquireResult = vkAcquireNextImageKHR(logical_graphics_card, swapchain.swapchain, UINT64_MAX, ImageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
         if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {                            // If the swapchain goes out of date
             ASWL::utilities::Logger("R01S0", "Error: Swapchain out of date.");      // then log the error
@@ -87,7 +87,7 @@ namespace Forge {
         }
 
         if (InFlightImages[imageIndex] != VK_NULL_HANDLE)                                                               // If previous frame is using the fence
-            vkWaitForFences(logical_graphics_card.device, 1, &InFlightFences[currentFrame], VK_TRUE, UINT64_MAX);       // then wait for the fence to finish
+            vkWaitForFences(logical_graphics_card, 1, &InFlightFences[currentFrame], VK_TRUE, UINT64_MAX);       // then wait for the fence to finish
 
         // Set image fence at index to fence at current frame
         InFlightImages[imageIndex] = InFlightFences[currentFrame];
@@ -107,9 +107,9 @@ namespace Forge {
         submitInfo.signalSemaphoreCount = 1;                        // Number of semaphores to signal after command buffer execution finishes
         submitInfo.pSignalSemaphores = signalSeamphores;            // Pointer to array of signal semaphores
 
-        vkResetFences(logical_graphics_card.device, 1, &InFlightFences[currentFrame]);      // Reset fence
+        vkResetFences(logical_graphics_card, 1, &InFlightFences[currentFrame]);      // Reset fence
         
-        if (vkQueueSubmit(logical_graphics_card.graphicsQueue, 1, &submitInfo, InFlightFences[currentFrame]) != VK_SUCCESS) {       // If semaphore or command buffer sequence submission to queue fails
+        if (vkQueueSubmit(_graphicsQueue, 1, &submitInfo, InFlightFences[currentFrame]) != VK_SUCCESS) {       // If semaphore or command buffer sequence submission to queue fails
             ASWL::utilities::Logger("R03D0", "Error: Failed to submit semaphore/command buffer sequence to graphics queue.");       // then log the error
             return 4;                                                                                                               // and stop the rendering process
         }
@@ -126,7 +126,7 @@ namespace Forge {
         presentInfo.pResults = nullptr;                                 // Optional
 
         // Queue an image to render
-        VkResult queuePresentResult = vkQueuePresentKHR(logical_graphics_card.presentQueue, &presentInfo);
+        VkResult queuePresentResult = vkQueuePresentKHR(_presentQueue, &presentInfo);
 
         if (queuePresentResult == VK_ERROR_OUT_OF_DATE_KHR) {                       // If the swapchain goes out of date
             ASWL::utilities::Logger("R01S0", "Error: Swapchain out of date.");      // then log the error
@@ -158,9 +158,9 @@ namespace Forge {
     void Renderer::cleanup() {
 
         for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-            vkDestroySemaphore(logical_graphics_card.device, ImageAvailableSemaphores[i], nullptr);
-            vkDestroySemaphore(logical_graphics_card.device, RenderFinishedSemaphores[i], nullptr);
-            vkDestroyFence(logical_graphics_card.device, InFlightFences[i], nullptr);
+            vkDestroySemaphore(logical_graphics_card, ImageAvailableSemaphores[i], nullptr);
+            vkDestroySemaphore(logical_graphics_card, RenderFinishedSemaphores[i], nullptr);
+            vkDestroyFence(logical_graphics_card, InFlightFences[i], nullptr);
         }
     }
 }

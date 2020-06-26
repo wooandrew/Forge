@@ -14,7 +14,7 @@
 
 // TheForge includes
 #include "forge_vars.hpp"
-#include "logical_devices.hpp"
+//#include "logical_devices.hpp"
 #include "swapchain.hpp"
 #include "pipeline.hpp"
 
@@ -32,10 +32,10 @@ namespace Forge {
         Renderer();         // Default constructor
         ~Renderer();        // Default destructor
 
-        int init(LogicalDevice& _lgc, Swapchain& _swapchain, Pipeline& _pipeline, std::vector<VkCommandBuffer>& _cmdBuffers);       // Initialize renderer
+        int init(VkDevice& _lgc, Swapchain& _swapchain, Pipeline& _pipeline, std::vector<VkCommandBuffer>& _cmdBuffers);       // Initialize renderer
         void cleanup();     // Cleanup renderer
 
-        int draw();         // Draw frame
+        int draw(VkQueue& _graphicsQueue, VkQueue& _presentQueue);         // Draw frame
         void SetComponents(Swapchain& _swapchain, Pipeline& _pipeline, std::vector<VkCommandBuffer>& _cmdBuffers);      // Set Vulkan components
 
         // Renderer type
@@ -48,7 +48,7 @@ namespace Forge {
         std::vector<VkFence> InFlightFences;                        // List of handles to fence object
         std::vector<VkFence> InFlightImages;                        // List of fences for each image in swapchain
 
-        LogicalDevice logical_graphics_card;        // Logical graphics card object
+        VkDevice logical_graphics_card;        // Logical graphics card object
         Swapchain swapchain;                        // Swapchain object instance
         Pipeline pipeline;                          // Pipeline object instance
 
