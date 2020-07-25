@@ -21,13 +21,13 @@ namespace Forge::Core {
             QueueFamilyIndices indices = FindQueueFamilies(_pgpu, _surface);
             bool extensionsSupported = CheckDeviceExtensionSupport(_pgpu);
 
-            bool swapChainAdequacy = false;                                                                             // Is swap chain adequate
+            bool swapchainAdequacy = false;                                                                             // Is swap chain adequate
             if (extensionsSupported) {                                                                                  // If the device supports extensions
                 SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(_pgpu, _surface);                      // Populates SwapChainSupportDetails
-                swapChainAdequacy = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();        // The swap chain is adequate if the list of formats and present modes is not empty
+                swapchainAdequacy = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();        // The swap chain is adequate if the list of formats and present modes is not empty
             }
 
-            return indices.hasValue() && extensionsSupported && swapChainAdequacy;
+            return indices.hasValue() && extensionsSupported && swapchainAdequacy;
         }
 
         // Checks if physical device supports Vulkan extensions
@@ -61,6 +61,7 @@ namespace Forge::Core {
     }
 
     void GraphicsCard::cleanup() {
+        vkDeviceWaitIdle(LGPU);
         vkDestroyDevice(LGPU, nullptr);       // Destroy logical device
     }
 

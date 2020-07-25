@@ -75,13 +75,13 @@ namespace Forge {
         QueueFamilyIndices indices = FindQueueFamilies(device, surface);
         bool extensionsSupported = CheckDeviceExtensionSupport(device);
 
-        bool swapChainAdequacy = false;                                                                             // Is swap chain adequate
+        bool swapchainAdequacy = false;                                                                             // Is swap chain adequate
         if (extensionsSupported) {                                                                                  // If the device supports extensions
             SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device, surface);                      // Populates SwapChainSupportDetails
-            swapChainAdequacy = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();        // The swap chain is adequate if the list of formats and present modes is not empty
+            swapchainAdequacy = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();        // The swap chain is adequate if the list of formats and present modes is not empty
         }
 
-        return indices.hasValue() && extensionsSupported && swapChainAdequacy;
+        return indices.hasValue() && extensionsSupported && swapchainAdequacy;
     }
 
     // Checks if physical device supports Vulkan extensions

@@ -20,7 +20,8 @@ add_library(libforge SHARED
     "include/vertex.hpp"                "src/vertex.cpp" 
     "include/vkcontainer.hpp"           "src/vkcontainer.cpp"  
     "include/core/core.hpp"             "src/core/core.cpp"
-    "include/core/graphicscard.hpp"     "src/core/graphicscard.cpp" )
+    "include/core/graphicscard.hpp"     "src/core/graphicscard.cpp"   
+    "include/app/framework.hpp"         "src/app/framework.cpp")
 
 include(GenerateExportHeader)
 generate_export_header(libforge)

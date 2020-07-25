@@ -1,37 +1,147 @@
-// TheForge - src/pipeline (c) Andrew Woo, 2020
+// TheForge - src/app/framework (c) Andrew Woo, 2020
 
 #pragma warning(disable : 26812)
 
-#include "pipeline.hpp"
-#include "vertex.hpp"
+
+#include "app/framework.hpp"
 #include "forge_vars.hpp"
 
-// Standard Library
-#include <fstream>
-
-// Dependencies
-#include <ASWL/utilities.hpp>
-
-namespace Forge {
+namespace Forge::App {
 
     // Default constructor
-    Pipeline::Pipeline() {
-        device = VK_NULL_HANDLE;
-        pipelineLayout = VK_NULL_HANDLE;
-        renderPass = VK_NULL_HANDLE;
-        graphicsPipeline = VK_NULL_HANDLE;
-    }
+    Framework::Framework() {
+
+        swapchain = VK_NULL_HANDLE;
+        RenderPass = VK_NULL_HANDLE;
+        PipelineLayout = VK_NULL_HANDLE;
+        pipeline = VK_NULL_HANDLE;
+
+        ImageFormat = VK_FORMAT_UNDEFINED;
+        extent = { 1000, 600 };
+    };
 
     // Default destructor
-    Pipeline::~Pipeline() {
+    Framework::~Framework() {
+
+    };
+
+    // Initialize App Rendering framework
+    int Framework::init(GLFWwindow* _window, std::shared_ptr<Core::EngineCore> _core) {
+
+        core = _core;
+
+        int resultSwapchain = 0;        // Swapchain initialization result
+        int resultRenderPass = 0;       // RenderPass initialization result
+        int resultFramebuffer = 0;      // Framebuffer initialization result
+        int resultPipeline = 0;         // Pipeline initialization result
+
+        resultSwapchain = initSwapchain(_window);       // Initialize the swapchain object
+        resultRenderPass = initRenderPass();            // Initialize the RenderPass object
+        resultFramebuffer = initFramebuffers();         // Initialize framebuffers
+
+        //std::string msg = 
+        //ASWL::utilities::Logger("F0000", msg);
+
+        return resultSwapchain + resultRenderPass + resultFramebuffer + resultPipeline;     // Return the sum of results
     }
 
-    int Pipeline::init(VkDevice& device, Swapchain& swapchain) {
+    int Framework::initSwapchain(GLFWwindow* _window) {
 
-        this->device = device;
+        SwapChainSupportDetails swapchainSupport = QuerySwapChainSupport(core->GetPGPU(), core->GetSurface());      // Get swapchain properties
+
+        VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapchainSupport.formats);       // Get surface format
+        VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapchainSupport.presentModes);        // Get surface present mode
+        VkExtent2D _extent = ChooseSwapExtent(_window, swapchainSupport.capabilities);              // Get surface extent
+        extent = _extent;
+
+        // Request one more image than minimum to avoid bottleneck
+        uint32_t imageCount = swapchainSupport.capabilities.minImageCount + 1;
+
+        // If there is more than one image queued, or more images than max is queued
+        if (swapchainSupport.capabilities.maxImageCount > 0 && imageCount > swapchainSupport.capabilities.maxImageCount)
+            imageCount = swapchainSupport.capabilities.maxImageCount;       // Request maximum amount of images
+
+        VkSwapchainCreateInfoKHR createInfo = {};                               // createInfo specifies the parameters of the swapchain object
+        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;         // Identify createInfo as structure type SWAPCHAIN_CREATE_INFO_KHR
+        createInfo.surface = core->GetSurface();                                // Set swapchain surface
+        createInfo.minImageCount = imageCount;                                  // Set the minimum image count
+        createInfo.imageFormat = surfaceFormat.format;                          // Set image format to same format as surface
+        createInfo.imageColorSpace = surfaceFormat.colorSpace;                  // Set image color space
+        createInfo.imageExtent = _extent;                                       // Set swapchain extent
+        createInfo.imageArrayLayers = 1;                                        // Number of views in a multiview surface
+        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;            // Swapchain intended use
+
+        QueueFamilyIndices indices = FindQueueFamilies(core->GetPGPU(), core->GetSurface());                    // Get queue family indices
+        uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };      // List of queue family indices
+
+        if (indices.graphicsFamily != indices.presentFamily) {              // If queue family indices are not equal
+            createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;       // Queue families can access image objects concurrently
+            createInfo.queueFamilyIndexCount = 2;                           // Number of queue families that will access image objects
+            createInfo.pQueueFamilyIndices = queueFamilyIndices;            // Pointer to queueFamilyIndices
+        }
+        else {
+            createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;        // Queue families can only access image objects exclusively
+            createInfo.queueFamilyIndexCount = 0;                           // Number of queue families that will access image objects
+            createInfo.pQueueFamilyIndices = nullptr;                       // Pointer to queueFamilyIndices
+        }
+
+        createInfo.preTransform = swapchainSupport.capabilities.currentTransform;       // Transform image to match presentation orientation
+        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;                  // Set alpha compositing mode
+        createInfo.presentMode = presentMode;                                           // Set swapchain presentation mode
+        createInfo.clipped = VK_TRUE;                                                   // Set whether or not to clip hidden pixels
+        createInfo.oldSwapchain = VK_NULL_HANDLE;                                       // Invalidated/unoptimized swapchains
+
+        if (vkCreateSwapchainKHR(core->GetLGPU(), &createInfo, nullptr, &swapchain) != VK_SUCCESS) {        // If vkSwapchain creation fails
+            ASWL::utilities::Logger("F01S0", "Fatal Error: Failed to create swapchain.");                   // then log the error
+            return 1;                                                                                       // and return the corresponding error value
+        }
+
+        vkGetSwapchainImagesKHR(core->GetLGPU(), swapchain, &imageCount, nullptr);              // Get number of images in swapchain
+        images.resize(imageCount);                                                              // Resize swapchain images list to fit
+        vkGetSwapchainImagesKHR(core->GetLGPU(), swapchain, &imageCount, images.data());        // Fill swapchain images list
+
+        ImageFormat = surfaceFormat.format;         // Set image format to equal surface format
+        extent = _extent;                           // Set swapchain extent
+
+        ImageViews.resize(images.size());           // Set image views list size to equal the number of images in swapchain
+
+        // Iterate through every image in swapchain images
+        for (int i = 0; i < images.size(); i++) {
+
+            // Create an image view object for each image
+            VkImageViewCreateInfo createImageViewInfo = {};                                     // createImageViewInfo specifies the parameters of the image view object
+            createImageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;               // Identify createImageViewInfo as structure type IMAGE_VIEW_CREATE_INFO
+            createImageViewInfo.image = images[i];                                              // Set the VkImage on which the image will be created
+            createImageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;                               // Set the image view type
+            createImageViewInfo.format = ImageFormat;                                           // Set the image view format
+
+            // Specify how to swizzle/map color
+            createImageViewInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;                   // Specify how component r should be swizzled (red)
+            createImageViewInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;                   // Specify how component g should be swizzled (green)
+            createImageViewInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;                   // Specify how component b should be swizzled (blue)
+            createImageViewInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;                   // Specify how component a should be swizzled (alpha)
+
+            // Specify the images purpose
+            createImageViewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;        // Determine which aspect(s) of the image are included in the view
+            createImageViewInfo.subresourceRange.baseMipLevel = 0;                              // First mipmap level accessible to the view
+            createImageViewInfo.subresourceRange.levelCount = 1;                                // Number of mipmap levels accessible to the view
+            createImageViewInfo.subresourceRange.baseArrayLayer = 0;                            // First array level accessible to the view
+            createImageViewInfo.subresourceRange.layerCount = 1;                                // Number of array levels accessible to the view
+
+            if (vkCreateImageView(core->GetLGPU(), &createImageViewInfo, nullptr, &ImageViews[i]) != VK_SUCCESS) {          // If image view creation fails
+                std::string msg = "Fatal Error: Failed to create image view at indice [" + std::to_string(i) + "]";         //
+                ASWL::utilities::Logger("F02S1", msg);                                                                      // then log the error
+                return 2;                                                                                                   // and return the corresponding error value
+            }
+        }
+
+        return 0;
+    }
+
+    int Framework::initRenderPass() {
 
         VkAttachmentDescription colorAttachment = {};                           // Structure specifies the attachment description
-        colorAttachment.format = swapchain.GetImageFormat();                    // Set colorAttachment format
+        colorAttachment.format = ImageFormat;                                   // Set colorAttachment format
         colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;                        // Number of samples of the image
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;                   // Set image color load operation behavior
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;                 // Set image color store operation behavior
@@ -57,19 +167,50 @@ namespace Forge {
         subpassDependency.srcAccessMask = 0;                                                    // Bitmask of source access mask
         subpassDependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;                 // Bitmask of destination access mask
 
-        VkRenderPassCreateInfo renderpassInfo = {};                             // renderpassInfo specifies the parameters of the renderpass object
-        renderpassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;       // Identify renderpassInfo as structure type RENDER_PASS_CREATE_INFO
-        renderpassInfo.attachmentCount = 1;                                     // Number of attachments used by renderpass object
-        renderpassInfo.pAttachments = &colorAttachment;                         // Pointer to structures describing renderpass attachments
-        renderpassInfo.subpassCount = 1;                                        // Number of subpasses to create
-        renderpassInfo.pSubpasses = &subpass;                                   // Pointer to array of structures describing each subpass
-        renderpassInfo.dependencyCount = 1;                                     // Number of subpass dependencies
-        renderpassInfo.pDependencies = &subpassDependency;                      // Pointer to subpass dependency structure
+        VkRenderPassCreateInfo renderPassInfo = {};                             // renderPassInfo specifies the parameters of the RenderPass object
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;       // Identify renderPassInfo as structure type RENDER_PASS_CREATE_INFO
+        renderPassInfo.attachmentCount = 1;                                     // Number of attachments used by RenderPass object
+        renderPassInfo.pAttachments = &colorAttachment;                         // Pointer to structures describing RenderPass attachments
+        renderPassInfo.subpassCount = 1;                                        // Number of subpasses to create
+        renderPassInfo.pSubpasses = &subpass;                                   // Pointer to array of structures describing each subpass
+        renderPassInfo.dependencyCount = 1;                                     // Number of subpass dependencies
+        renderPassInfo.pDependencies = &subpassDependency;                      // Pointer to subpass dependency structure
 
-        if (vkCreateRenderPass(device, &renderpassInfo, nullptr, &renderPass) != VK_SUCCESS) {          // If renderpass creation fails
-            ASWL::utilities::Logger("P00R0", "Fatal Error: Render Pass creation failed.");              // then log the error
-            return 1;                                                                                   // and return the corresponding error value
+        if (vkCreateRenderPass(core->GetLGPU(), &renderPassInfo, nullptr, &RenderPass) != VK_SUCCESS) {         // If RenderPass creation fails
+            ASWL::utilities::Logger("F03R0", "Fatal Error: Render Pass creation failed.");                      // then log the error
+            return 1;                                                                                           // and return the corresponding error value
         }
+
+        return 0;
+    }
+
+    int Framework::initFramebuffers() {
+
+        framebuffers.resize(ImageViews.size());                 // Resize framebuffers list
+        for (size_t i = 0; i < ImageViews.size(); i++) {        // Iterate through every VkImageView objects
+
+            VkImageView attachments[] = { ImageViews[i] };      // Create an array of VkImageView attachments
+
+            VkFramebufferCreateInfo framebufferInfo = {};                               // framebufferInfo specifies the parameters of the framebuffer object
+            framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;          // Identify framebufferInfo as structure type FRAMEBUFFER_CREATE_INFO
+            framebufferInfo.renderPass = RenderPass;                                    // Set render pass
+            framebufferInfo.attachmentCount = 1;                                        // Number of attachments per framebuffer
+            framebufferInfo.pAttachments = attachments;                                 // Pointer to array attachments
+            framebufferInfo.width = extent.width;                                       // Set framebuffer width
+            framebufferInfo.height = extent.height;                                     // Set framebuffer height
+            framebufferInfo.layers = 1;                                                 // Set framebuffer layer count
+
+            if (vkCreateFramebuffer(core->GetLGPU(), &framebufferInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) {          // If framebuffer creation fails at index
+                std::string msg = "Fatal Error: Failed to create framebuffer at index [" + std::to_string(i) + "].";        //
+                ASWL::utilities::Logger("F04FB", msg);                                                                      // then log the error
+                return 1;                                                                                                   // and return the corresponding error
+            }
+        }
+
+        return 0;
+    }
+
+    int Framework::initPipeline() {
 
         // Load Vertex Shader
         int vertShader = LoadShader(shaderMetadata.vertShaderPath, ShaderType::THE_FORGE_VK_SHADER_TYPE_VERTEX, ShaderLanguage::THE_FORGE_VK_SHADER_LANGUAGE_SPV);
@@ -82,9 +223,9 @@ namespace Forge {
         vertCreateInfo.pCode = reinterpret_cast<const uint32_t*>(vert.data());      // Pointer to shader code
 
         VkShaderModule vertShaderModule = VK_NULL_HANDLE;                                                   // Vertex Shader Module
-        if (vkCreateShaderModule(device, &vertCreateInfo, nullptr, &vertShaderModule)) {                    // If vertex shader module creation fails
-            ASWL::utilities::Logger("P01S0", "Fatal Error: Failed to create vertex shader module.");        // then log the error
-            return 2;                                                                                       // and return the corresponding error value
+        if (vkCreateShaderModule(core->GetLGPU(), &vertCreateInfo, nullptr, &vertShaderModule)) {           // If vertex shader module creation fails
+            ASWL::utilities::Logger("F04P0", "Fatal Error: Failed to create vertex shader module.");        // then log the error
+            return 1;                                                                                       // and return the corresponding error value
         }
 
         // Create Vertex Shader Pipeline
@@ -105,9 +246,9 @@ namespace Forge {
         fragCreateInfo.pCode = reinterpret_cast<const uint32_t*>(frag.data());      // Pointer to shader code
 
         VkShaderModule fragShaderModule = VK_NULL_HANDLE;                                                   // Fragment Shader Module
-        if (vkCreateShaderModule(device, &fragCreateInfo, nullptr, &fragShaderModule)) {                    // If fragment shader module creation fails
-            ASWL::utilities::Logger("P02S1", "Fatal Error: Failed to create fragment shader module.");      // then log the error
-            return 3;                                                                                       // and return the corresponding error value
+        if (vkCreateShaderModule(core->GetLGPU(), &fragCreateInfo, nullptr, &fragShaderModule)) {           // If fragment shader module creation fails
+            ASWL::utilities::Logger("F05P1", "Fatal Error: Failed to create fragment shader module.");      // then log the error
+            return 2;                                                                                       // and return the corresponding error value
         }
 
         // Create Fragment Shader Pipeline
@@ -135,17 +276,17 @@ namespace Forge {
         inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;                               // Define the type of primitive geometries that will be drawn from the vertices
         inputAssembly.primitiveRestartEnable = VK_FALSE;                                            // Determine whether a special vertex index value should restart the assembly of primitives.
 
-        VkViewport viewport = {};                                                   // Structure containing viewport parameters
-        viewport.x = 0.0f;                                                          // Set viewport upper left corner [LEFT]
-        viewport.y = 0.0f;                                                          // Set viewport upper left corner [ UP ]
-        viewport.width = static_cast<float>(swapchain.GetExtent().width);           // Set viewport width
-        viewport.height = static_cast<float>(swapchain.GetExtent().height);         // Set viewport height
-        viewport.minDepth = 0.0f;                                                   // Set viewport min depth
-        viewport.maxDepth = 1.0f;                                                   // Set viewport max depth
+        VkViewport viewport = {};                                   // Structure containing viewport parameters
+        viewport.x = 0.0f;                                          // Set viewport upper left corner [LEFT]
+        viewport.y = 0.0f;                                          // Set viewport upper left corner [ UP ]
+        viewport.width = static_cast<float>(extent.width);          // Set viewport width
+        viewport.height = static_cast<float>(extent.height);        // Set viewport height
+        viewport.minDepth = 0.0f;                                   // Set viewport min depth
+        viewport.maxDepth = 1.0f;                                   // Set viewport max depth
 
-        VkRect2D scissor = {};                      // Create scissor rect to store pixel data
-        scissor.offset = { 0,0 };                   // Set top left corner of scissor rect
-        scissor.extent = swapchain.GetExtent();     // Set size of scissor rect
+        VkRect2D scissor = {};          // Create scissor rect to store pixel data
+        scissor.offset = { 0,0 };       // Set top left corner of scissor rect
+        scissor.extent = extent;        // Set size of scissor rect
 
         VkPipelineViewportStateCreateInfo viewportState = {};                               // viewportState specifies the parameters of the pipline viewport
         viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;        // Identify viewportState as structure type PIPELINE_VIEWPORT_STATE_CREATE_INFO
@@ -211,9 +352,9 @@ namespace Forge {
         VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};                             // pipelineLayoutInfo specifies the parameters of the pipeline layout object
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;       // Identify pipelineLayoutInfo as structure type PIPELINE_LAYOUT_CREATE_INFO
 
-        if (vkCreatePipelineLayout(device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {      // If pipeline layout creation fails
-            ASWL::utilities::Logger("P0003", "Fatal Error: Failed to create pipeline layout.");                 // then log the error
-            return 4;                                                                                           // and return the corresponding error value
+        if (vkCreatePipelineLayout(core->GetLGPU(), &pipelineLayoutInfo, nullptr, &PipelineLayout) != VK_SUCCESS) {         // If pipeline layout creation fails
+            ASWL::utilities::Logger("F06P2", "Fatal Error: Failed to create pipeline layout.");                             // then log the error
+            return 3;                                                                                                       // and return the corresponding error value
         }
 
         VkGraphicsPipelineCreateInfo pipelineInfo = {};                             // pipelineInfo specifies the parameters of the pipeline object
@@ -228,25 +369,26 @@ namespace Forge {
         pipelineInfo.pDepthStencilState = nullptr;                                  // Pointer to depth stencil state structure
         pipelineInfo.pColorBlendState = &colorBlending;                             // Pointer to pipeline color blend state
         pipelineInfo.pDynamicState = nullptr;                                       // Pointer to dynamic state structure parameters
-        pipelineInfo.layout = pipelineLayout;                                       // Set pipeline layout
-        pipelineInfo.renderPass = renderPass;                                       // Set pipeline render pass
+        pipelineInfo.layout = PipelineLayout;                                       // Set pipeline layout
+        pipelineInfo.renderPass = RenderPass;                                       // Set pipeline render pass
         pipelineInfo.subpass = 0;                                                   // Render pass subpass index
         pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;                           // Optional
         pipelineInfo.basePipelineIndex = -1;                                        // Optional
 
-        if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {        // If graphics pipeline creation fails
-            ASWL::utilities::Logger("P0004", "Fatal Error: Failed to create graphics pipeline.");                                   // then log the error
-            return 5;                                                                                                               // and return the corresponding error
+        if (vkCreateGraphicsPipelines(core->GetLGPU(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {       // If graphics pipeline creation fails
+            ASWL::utilities::Logger("F07P3", "Fatal Error: Failed to create graphics pipeline.");                                   // then log the error
+            return 4;                                                                                                               // and return the corresponding error
         }
 
-        vkDestroyShaderModule(device, vertShaderModule, nullptr);
-        vkDestroyShaderModule(device, fragShaderModule, nullptr);
+        vkDestroyShaderModule(core->GetLGPU(), vertShaderModule, nullptr);
+        vkDestroyShaderModule(core->GetLGPU(), fragShaderModule, nullptr);
 
         return 0;
     }
 
-    // Loads shader given shader path, type, and language (default language is SPIR-V)
-    int Pipeline::LoadShader(const std::string& path, ShaderType type, ShaderLanguage language) {
+
+    // Helper functions
+    int Framework::LoadShader(const std::string& path, ShaderType type, ShaderLanguage language) {
 
         // If the shader type is SPIR-V (SPV)
         if (language == ShaderLanguage::THE_FORGE_VK_SHADER_LANGUAGE_SPV) {
@@ -255,8 +397,8 @@ namespace Forge {
 
             if (!shader.is_open()) {                                                                // If opening shader file fails
                 std::string msg = "Fatal Error: Failed to load shader from [" + path + "].";        //
-                ASWL::utilities::Logger("P05S2", msg);                                              // then log the error
-                return 6;                                                                           // and return the corresponding error
+                ASWL::utilities::Logger("F08P4", msg);                                              // then log the error
+                return 5;                                                                           // and return the corresponding error
             }
 
             size_t fileSize = (size_t)shader.tellg();       // Get input position associated with streambuf object
@@ -271,27 +413,12 @@ namespace Forge {
                 vert = buffer;                                                      // Set vert to buffer
             else if (type == ShaderType::THE_FORGE_VK_SHADER_TYPE_FRAGMENT)         // If the shader is a fragment shader
                 frag = buffer;                                                      // Set frag to buffer
-            
+
             return 0;
         }
         else {
-            ASWL::utilities::Logger("XXP6S", "Fatal Error: Only SPIR-V is currently supported.");
+            ASWL::utilities::Logger("SHDRT", "Fatal Error: Only SPIR-V is currently supported.");
             return -1;
         }
-    }
-
-    // Returns renderpass object on request
-    VkRenderPass& Pipeline::GetRenderPass() {
-        return renderPass;
-    }
-    VkPipeline& Pipeline::GetGraphicsPipeline() {
-        return graphicsPipeline;
-    }
-
-    void Pipeline::cleanup() {
-        
-        vkDestroyPipeline(device, graphicsPipeline, nullptr);
-        vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
-        vkDestroyRenderPass(device, renderPass, nullptr);
     }
 }

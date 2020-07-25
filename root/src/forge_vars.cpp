@@ -110,6 +110,9 @@ namespace Forge {
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
         vkBeginCommandBuffer(cmdBuffer, &beginInfo);
+
+        VkBufferCopy copyRegion = {};
+
     }
 
     // Function determines if all optional values in QueueFamilyIndices has a value

@@ -18,7 +18,7 @@
 
 namespace Forge {
 
-    class Engine;
+    class Engine;               // To be deprecated
     class VkContainer;          // To be deprecated
 
     namespace Core {
@@ -47,7 +47,7 @@ namespace Forge {
              * must be set using the engine metadata.
             **/
 
-            friend class Forge::Engine;
+            friend class Forge::Engine;             // To be deprecated
             friend class Forge::VkContainer;        // To be deprecated
 
         public:
@@ -58,6 +58,8 @@ namespace Forge {
             int init(GLFWwindow* window);       // Initialize Forge::Core
 
             // Getters
+            VkInstance& GetInstance();          // Returns Vulkan instance
+            VkSurfaceKHR& GetSurface();         // Reutnrs Vulkan surface
             VkPhysicalDevice& GetPGPU();        // Returns Physical Graphics Card
             VkDevice& GetLGPU();                // Returns Logical Graphics Card
 

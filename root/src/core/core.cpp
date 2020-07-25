@@ -105,13 +105,20 @@ namespace Forge::Core {
         return 0;
     }
 
-
-    VkPhysicalDevice& EngineCore::GetPGPU() {
+    // Getters
+    VkInstance& EngineCore::GetInstance() {         // Returns Vulkan instance on request
+        return instance;
+    }
+    VkSurfaceKHR& EngineCore::GetSurface() {        // Returns Vulkan surface on request
+        return surface;
+    }
+    VkPhysicalDevice& EngineCore::GetPGPU() {       // Returns physical GPU object on request
         return gpu->PGPU;
     }
-    VkDevice& EngineCore::GetLGPU() {
+    VkDevice& EngineCore::GetLGPU() {               // Returns logical GPU object on request
         return gpu->LGPU;
     }
+
 
     // Return the extensions required by application
     std::vector<const char*> EngineCore::GetRequiredExtensions() {

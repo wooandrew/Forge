@@ -12,6 +12,7 @@ namespace Forge {
 
         window = nullptr;
         core = std::make_shared<Core::EngineCore>();
+        framework = std::make_shared<App::Framework>();
     }
 
     // Engine destructor
@@ -98,8 +99,7 @@ namespace Forge {
         container.reinitialize(window, core->surface);
     }
 
-    
-
+ 
     // Return window instance on request
     GLFWwindow* Engine::GetWindow() {
         return window;

@@ -1,3 +1,7 @@
+DISCLAIMER: AS OF VERSION 0.1.0, THE ERROR CODES IN THIS FILE ARE SUBJECT TO CHANGE AND MAY NOT BE ACCURATE.
+
+
+// REFACTOR
 Engine
 1   "E00G0", "Fatal Error: Failed to initialize GLFW -> !glfwInit()."
 2   "E01G1", "Fatal Error: Failed to create window -> !glfwCreateWindow()."
@@ -19,6 +23,27 @@ Engine Core: Graphics Card
 1   "GC000", "Fatal Error: Failed to create a logical device -> graphics card."
 2   "GC001", "Fatal Error: Failed to find GPU that supports Vulkan."
 3   "GC002", "Fatal Error: Failed to find GPU that supports required Vulkan operation."
+
+
+App Framework: Swapchain
+1   "F01S0", "Fatal Error: Failed to create swapchain."
+2   "F02S1", "Fatal Error: Failed to create image view at indice [" + i + "]"
+
+App Framework: Renderpass
+1   "F03R0", "Fatal Error: Render Pass creation failed."
+
+App Framework: Framebuffers
+1   "F04FB", "Fatal Error: Failed to create framebuffer at index [" + i + "]."
+
+App Framework: Pipeline
+1   "F04P0", "Fatal Error: Failed to create vertex shader module."
+2   "F05P1", "Fatal Error: Failed to create fragment shader module."
+3   "F06P2", "Fatal Error: Failed to create pipeline layout."
+4   "F07P3", "Fatal Error: Failed to create graphics pipeline."
+5   "F08P4", "Fatal Error: Failed to load shader from [" + path + "]."
+
+
+
 
 
 
@@ -72,4 +97,4 @@ Miscellaneous
  3  "B0003", "Fatal Error: Failed to allocate memory for the buffer."
  X  "VALID", "Error: Validation Layer ->", msg
 -1  "XXR3D", "3D Rendering is not yet supported."                   -> Init 3D Renderer
--1  "XXP6S", "Fatal Error: Only SPIR-V is currently supported."     -> Pipeline 6 shader 3 -> GLSL shader compile
+-1  "SHDRT", "Fatal Error: Only SPIR-V is currently supported."     -> Pipeline 6 shader 3 -> GLSL shader compile

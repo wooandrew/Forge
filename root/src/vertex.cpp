@@ -50,7 +50,8 @@ namespace Forge {
             return 2;                                                                                                                   // and return the corresponding error value
         }
 
-
+        vkDestroyBuffer(device, stagingBuffer, nullptr);
+        vkFreeMemory(device, stagingBufferMemory, nullptr);
 
         return 0;
     }

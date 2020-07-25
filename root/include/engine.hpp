@@ -20,6 +20,7 @@
 #include "forge_vars.hpp"
 #include "vkcontainer.hpp"
 #include "core/core.hpp"
+#include "app/framework.hpp"
 
 namespace Forge {    // Wrapper namespace
 
@@ -69,10 +70,11 @@ namespace Forge {    // Wrapper namespace
 
     private:
 
-        GLFWwindow* window;                                 // GLFW Window ... it's just the window.
-        std::shared_ptr<Core::EngineCore> core;       // TheForge Engine core
+        GLFWwindow* window;                             // GLFW Window ... it's just the window.
+        std::shared_ptr<Core::EngineCore> core;         // TheForge Engine core
+        std::shared_ptr<App::Framework> framework;      // Rendering framework
 
-        VkContainer container;      // Container for Engine's Vulkan components
+        VkContainer container;      // Container for Engine's Vulkan components .. To be deprecated
     };
 }
 
