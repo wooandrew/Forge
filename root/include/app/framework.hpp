@@ -17,7 +17,7 @@
 
 // TheForge includes
 #include "core/core.hpp"
-#include "core/graphicscard.hpp"
+//#include "core/graphicscard.hpp"
 
 namespace Forge::App {
 
@@ -35,7 +35,7 @@ namespace Forge::App {
 
         /**
          * TheForge App Framework
-         * Contains app framework
+         * Contains rendering framework
          *
          * The app framework initializes low-level
          * rendering components for higher-level app
@@ -49,7 +49,11 @@ namespace Forge::App {
         Framework();        // Default constructor
         ~Framework();       // Default destructor
 
-        int init(GLFWwindow* _window, std::shared_ptr<Core::EngineCore> _core);         // Initialize the app framework
+        int init(GLFWwindow* _window, std::shared_ptr<Core::EngineCore> _core);         // Initialize the rendering framework
+        int reinitialize(GLFWwindow* _window);                                          // Reinitialize rendering framework
+
+        // Cleanup framework
+        void cleanup();
 
     private:
 

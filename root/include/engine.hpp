@@ -18,7 +18,7 @@
 
 // TheForge includes
 #include "forge_vars.hpp"
-#include "vkcontainer.hpp"
+//#include "vkcontainer.hpp"
 #include "core/core.hpp"
 #include "app/framework.hpp"
 
@@ -74,7 +74,7 @@ namespace Forge {    // Wrapper namespace
         std::shared_ptr<Core::EngineCore> core;         // TheForge Engine core
         std::shared_ptr<App::Framework> framework;      // Rendering framework
 
-        VkContainer container;      // Container for Engine's Vulkan components .. To be deprecated
+        //VkContainer container;      // Container for Engine's Vulkan components .. To be deprecated
     };
 }
 

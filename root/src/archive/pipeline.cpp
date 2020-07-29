@@ -275,7 +275,7 @@ namespace Forge {
             return 0;
         }
         else {
-            ASWL::utilities::Logger("XXP6S", "Fatal Error: Only SPIR-V is currently supported.");
+            ASWL::utilities::Logger("XXP6S", "Fatal Error: Only SPIR-V shaders are currently supported.");
             return -1;
         }
     }

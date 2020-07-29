@@ -30,19 +30,62 @@ namespace Forge::App {
 
         core = _core;
 
-        int resultSwapchain = 0;        // Swapchain initialization result
-        int resultRenderPass = 0;       // RenderPass initialization result
-        int resultFramebuffer = 0;      // Framebuffer initialization result
-        int resultPipeline = 0;         // Pipeline initialization result
+        int rSC = initSwapchain(_window);       // Initialize the swapchain object
+        int rRP = initRenderPass();             // Initialize the RenderPass object
+        int rFB = initFramebuffers();           // Initialize framebuffers
+        int rPL = initPipeline();               // Initialize the pipeline object
 
-        resultSwapchain = initSwapchain(_window);       // Initialize the swapchain object
-        resultRenderPass = initRenderPass();            // Initialize the RenderPass object
-        resultFramebuffer = initFramebuffers();         // Initialize framebuffers
+        std::string msg = "Framework initialization status is [" + std::to_string(rSC) + "|" + std::to_string(rRP) + "|" + std::to_string(rFB) + "|" + std::to_string(rPL) + "].";
+        ASWL::utilities::Logger("F0000", msg);
 
-        //std::string msg = 
-        //ASWL::utilities::Logger("F0000", msg);
+        return rSC + rRP + rFB + rPL;       // Return the sum of results
+    }
 
-        return resultSwapchain + resultRenderPass + resultFramebuffer + resultPipeline;     // Return the sum of results
+    int Framework::reinitialize(GLFWwindow* _window) {
+
+        int width = 0;
+        int height = 0;
+
+        do {
+
+            glfwGetFramebufferSize(_window, &width, &height);       // Get framebuffer extent
+            if (width == 0 || height == 0)                          // If framebuffer extent is minimized in any way
+                glfwWaitEvents();                                   // wait for an event and reevaluate framebuffer size
+
+        } while (width == 0 || height == 0);
+
+        vkDeviceWaitIdle(core->GetLGPU());      // Wait for device to complete all operations
+        cleanup();                              // then cleanup all components
+
+        auto reinitializeFramework = [&]() {
+
+            // Reinitialize Swapchain object
+            int status = initSwapchain(_window);
+            if (status != 0) return 1;
+
+            // Reinitialize RenderPass object
+            status = initRenderPass();
+            if (status != 0) return 2;
+
+            // Reinitialize swapchain framebuffers
+            status = initFramebuffers();
+            if (status != 0) return 3;
+
+            // Reinitialize Pipeline object
+            status = initPipeline();
+            if (status != 0) return 4;
+
+            return 0;
+        };
+
+        int ret = reinitializeFramework();
+        if (ret != 0) {                                                                                                         // If swapchain reinitialization fails
+            std::string msg = "Fatal Error: Failed to reinitialize framework with error [" + std::to_string(ret) + "].";        //
+            ASWL::utilities::Logger("F0001", msg);                                                                              // then log the error
+            return 2;                                                                                                           // and return the corresponding error value
+        }
+
+        return 0;
     }
 
     int Framework::initSwapchain(GLFWwindow* _window) {
@@ -92,8 +135,8 @@ namespace Forge::App {
         createInfo.oldSwapchain = VK_NULL_HANDLE;                                       // Invalidated/unoptimized swapchains
 
         if (vkCreateSwapchainKHR(core->GetLGPU(), &createInfo, nullptr, &swapchain) != VK_SUCCESS) {        // If vkSwapchain creation fails
-            ASWL::utilities::Logger("F01S0", "Fatal Error: Failed to create swapchain.");                   // then log the error
-            return 1;                                                                                       // and return the corresponding error value
+            ASWL::utilities::Logger("F02S0", "Fatal Error: Failed to create swapchain.");                   // then log the error
+            return 3;                                                                                       // and return the corresponding error value
         }
 
         vkGetSwapchainImagesKHR(core->GetLGPU(), swapchain, &imageCount, nullptr);              // Get number of images in swapchain
@@ -130,8 +173,8 @@ namespace Forge::App {
 
             if (vkCreateImageView(core->GetLGPU(), &createImageViewInfo, nullptr, &ImageViews[i]) != VK_SUCCESS) {          // If image view creation fails
                 std::string msg = "Fatal Error: Failed to create image view at indice [" + std::to_string(i) + "]";         //
-                ASWL::utilities::Logger("F02S1", msg);                                                                      // then log the error
-                return 2;                                                                                                   // and return the corresponding error value
+                ASWL::utilities::Logger("F03S1", msg);                                                                      // then log the error
+                return 4;                                                                                                   // and return the corresponding error value
             }
         }
 
@@ -177,8 +220,8 @@ namespace Forge::App {
         renderPassInfo.pDependencies = &subpassDependency;                      // Pointer to subpass dependency structure
 
         if (vkCreateRenderPass(core->GetLGPU(), &renderPassInfo, nullptr, &RenderPass) != VK_SUCCESS) {         // If RenderPass creation fails
-            ASWL::utilities::Logger("F03R0", "Fatal Error: Render Pass creation failed.");                      // then log the error
-            return 1;                                                                                           // and return the corresponding error value
+            ASWL::utilities::Logger("F04R0", "Fatal Error: Render Pass creation failed.");                      // then log the error
+            return 5;                                                                                           // and return the corresponding error value
         }
 
         return 0;
@@ -202,8 +245,8 @@ namespace Forge::App {
 
             if (vkCreateFramebuffer(core->GetLGPU(), &framebufferInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) {          // If framebuffer creation fails at index
                 std::string msg = "Fatal Error: Failed to create framebuffer at index [" + std::to_string(i) + "].";        //
-                ASWL::utilities::Logger("F04FB", msg);                                                                      // then log the error
-                return 1;                                                                                                   // and return the corresponding error
+                ASWL::utilities::Logger("F05FB", msg);                                                                      // then log the error
+                return 6;                                                                                                   // and return the corresponding error
             }
         }
 
@@ -224,8 +267,8 @@ namespace Forge::App {
 
         VkShaderModule vertShaderModule = VK_NULL_HANDLE;                                                   // Vertex Shader Module
         if (vkCreateShaderModule(core->GetLGPU(), &vertCreateInfo, nullptr, &vertShaderModule)) {           // If vertex shader module creation fails
-            ASWL::utilities::Logger("F04P0", "Fatal Error: Failed to create vertex shader module.");        // then log the error
-            return 1;                                                                                       // and return the corresponding error value
+            ASWL::utilities::Logger("F06P0", "Fatal Error: Failed to create vertex shader module.");        // then log the error
+            return 7;                                                                                       // and return the corresponding error value
         }
 
         // Create Vertex Shader Pipeline
@@ -247,8 +290,8 @@ namespace Forge::App {
 
         VkShaderModule fragShaderModule = VK_NULL_HANDLE;                                                   // Fragment Shader Module
         if (vkCreateShaderModule(core->GetLGPU(), &fragCreateInfo, nullptr, &fragShaderModule)) {           // If fragment shader module creation fails
-            ASWL::utilities::Logger("F05P1", "Fatal Error: Failed to create fragment shader module.");      // then log the error
-            return 2;                                                                                       // and return the corresponding error value
+            ASWL::utilities::Logger("F07P1", "Fatal Error: Failed to create fragment shader module.");      // then log the error
+            return 8;                                                                                       // and return the corresponding error value
         }
 
         // Create Fragment Shader Pipeline
@@ -320,9 +363,9 @@ namespace Forge::App {
 
         VkPipelineColorBlendAttachmentState colorBlendAttachment = {};                          // colorBlendAttachment specifies the pipeline color blend attachment state
         colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |                        // Set which color component is enabled for writing (R) RED
-                                              VK_COLOR_COMPONENT_G_BIT |                        // Set which color component is enabled for writing (G) GREEN
-                                              VK_COLOR_COMPONENT_B_BIT |                        // Set which color component is enabled for writing (B) BLUE
-                                              VK_COLOR_COMPONENT_A_BIT;                         // Set which color component is enabled for writing (A) ALPHA
+            VK_COLOR_COMPONENT_G_BIT |                        // Set which color component is enabled for writing (G) GREEN
+            VK_COLOR_COMPONENT_B_BIT |                        // Set which color component is enabled for writing (B) BLUE
+            VK_COLOR_COMPONENT_A_BIT;                         // Set which color component is enabled for writing (A) ALPHA
         colorBlendAttachment.blendEnable = VK_TRUE;                                             // Set whether or not color blending is enabled
         colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;                   // Set color blending source factor
         colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;         // Set color blending destination factor
@@ -353,8 +396,8 @@ namespace Forge::App {
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;       // Identify pipelineLayoutInfo as structure type PIPELINE_LAYOUT_CREATE_INFO
 
         if (vkCreatePipelineLayout(core->GetLGPU(), &pipelineLayoutInfo, nullptr, &PipelineLayout) != VK_SUCCESS) {         // If pipeline layout creation fails
-            ASWL::utilities::Logger("F06P2", "Fatal Error: Failed to create pipeline layout.");                             // then log the error
-            return 3;                                                                                                       // and return the corresponding error value
+            ASWL::utilities::Logger("F08P2", "Fatal Error: Failed to create pipeline layout.");                             // then log the error
+            return 9;                                                                                                       // and return the corresponding error value
         }
 
         VkGraphicsPipelineCreateInfo pipelineInfo = {};                             // pipelineInfo specifies the parameters of the pipeline object
@@ -376,8 +419,8 @@ namespace Forge::App {
         pipelineInfo.basePipelineIndex = -1;                                        // Optional
 
         if (vkCreateGraphicsPipelines(core->GetLGPU(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {       // If graphics pipeline creation fails
-            ASWL::utilities::Logger("F07P3", "Fatal Error: Failed to create graphics pipeline.");                                   // then log the error
-            return 4;                                                                                                               // and return the corresponding error
+            ASWL::utilities::Logger("F09P3", "Fatal Error: Failed to create graphics pipeline.");                                   // then log the error
+            return 10;                                                                                                               // and return the corresponding error
         }
 
         vkDestroyShaderModule(core->GetLGPU(), vertShaderModule, nullptr);
@@ -397,8 +440,8 @@ namespace Forge::App {
 
             if (!shader.is_open()) {                                                                // If opening shader file fails
                 std::string msg = "Fatal Error: Failed to load shader from [" + path + "].";        //
-                ASWL::utilities::Logger("F08P4", msg);                                              // then log the error
-                return 5;                                                                           // and return the corresponding error
+                ASWL::utilities::Logger("F10P4", msg);                                              // then log the error
+                return 11;                                                                          // and return the corresponding error
             }
 
             size_t fileSize = (size_t)shader.tellg();       // Get input position associated with streambuf object
@@ -417,8 +460,32 @@ namespace Forge::App {
             return 0;
         }
         else {
-            ASWL::utilities::Logger("SHDRT", "Fatal Error: Only SPIR-V is currently supported.");
+            ASWL::utilities::Logger("SHDRT", "Fatal Error: Only SPIR-V shaders are currently supported.");
             return -1;
         }
+    }
+
+    // Cleanup framework
+    void Framework::cleanup() {
+
+        vkDeviceWaitIdle(core->GetLGPU());
+
+        // Cleanup Pipeline
+        vkDestroyPipeline(core->GetLGPU(), pipeline, nullptr);
+        vkDestroyPipelineLayout(core->GetLGPU(), PipelineLayout, nullptr);
+
+        // Cleanup RenderPass
+        vkDestroyRenderPass(core->GetLGPU(), RenderPass, nullptr);
+
+        // Cleanup Framebuffers
+        for (auto framebuffer : framebuffers)
+            vkDestroyFramebuffer(core->GetLGPU(), framebuffer, nullptr);
+
+        // Cleanup ImageViews
+        for (auto imageview : ImageViews)
+            vkDestroyImageView(core->GetLGPU(), imageview, nullptr);
+
+        // Cleanup Swapchain
+        vkDestroySwapchainKHR(core->GetLGPU(), swapchain, nullptr);
     }
 }

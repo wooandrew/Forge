@@ -5,11 +5,9 @@ DISCLAIMER: AS OF VERSION 0.1.0, THE ERROR CODES IN THIS FILE ARE SUBJECT TO CHA
 Engine
 1   "E00G0", "Fatal Error: Failed to initialize GLFW -> !glfwInit()."
 2   "E01G1", "Fatal Error: Failed to create window -> !glfwCreateWindow()."
-3   
-4   
-5   
-6   "E05V2", "Fatal Error: An error occured while attempting to initialize Vulkan components [" + status + "]."
-7   "E06R0", "Fatal Error: Failed to initialize renderer with error [" + status + "]."
+3   "E02C0", "Fatal Error: Failed to initialize engine core with error [" + status + "]."
+4   "E03F0", "Fatal Error: Failed to initialize engine rendering framework with error [" + status + "]."
+5   "E04R0", "Fatal Error: Failed to initialize renderer with error [" + status + "]."
 
 
 Engine Core
@@ -24,23 +22,28 @@ Engine Core: Graphics Card
 2   "GC001", "Fatal Error: Failed to find GPU that supports Vulkan."
 3   "GC002", "Fatal Error: Failed to find GPU that supports required Vulkan operation."
 
+App Framework
+X   "F0000", "Framework initialization status is [" + rSC + " | " + rRP + " | " + rFB + " | " + rPL + "]."
+
+App Framework: Reinitialize
+2   "F0001", "Fatal Error: Failed to reinitialize framework with error [" + status + "]."
 
 App Framework: Swapchain
-1   "F01S0", "Fatal Error: Failed to create swapchain."
-2   "F02S1", "Fatal Error: Failed to create image view at indice [" + i + "]"
+3   "F02S0", "Fatal Error: Failed to create swapchain."
+4   "F03S1", "Fatal Error: Failed to create image view at indice [" + i + "]"
 
 App Framework: Renderpass
-1   "F03R0", "Fatal Error: Render Pass creation failed."
+5   "F04R0", "Fatal Error: Render Pass creation failed."
 
 App Framework: Framebuffers
-1   "F04FB", "Fatal Error: Failed to create framebuffer at index [" + i + "]."
+6   "F05FB", "Fatal Error: Failed to create framebuffer at index [" + i + "]."
 
 App Framework: Pipeline
-1   "F04P0", "Fatal Error: Failed to create vertex shader module."
-2   "F05P1", "Fatal Error: Failed to create fragment shader module."
-3   "F06P2", "Fatal Error: Failed to create pipeline layout."
-4   "F07P3", "Fatal Error: Failed to create graphics pipeline."
-5   "F08P4", "Fatal Error: Failed to load shader from [" + path + "]."
+7   "F06P0", "Fatal Error: Failed to create vertex shader module."
+8   "F07P1", "Fatal Error: Failed to create fragment shader module."
+9   "F08P2", "Fatal Error: Failed to create pipeline layout."
+10  "F09P3", "Fatal Error: Failed to create graphics pipeline."
+11  "F10P4", "Fatal Error: Failed to load shader from [" + path + "]."
 
 
 
@@ -96,5 +99,5 @@ Miscellaneous
  2  "B0002", "Fatal Error: Failed to find a suitable memory type."
  3  "B0003", "Fatal Error: Failed to allocate memory for the buffer."
  X  "VALID", "Error: Validation Layer ->", msg
--1  "XXR3D", "3D Rendering is not yet supported."                   -> Init 3D Renderer
--1  "SHDRT", "Fatal Error: Only SPIR-V is currently supported."     -> Pipeline 6 shader 3 -> GLSL shader compile
+-1  "XXR3D", "3D Rendering is not yet supported."                               -> Init 3D Renderer
+-1  "SHDRT", "Fatal Error: Only SPIR-V shaders are currently supported."       -> Pipeline 6 shader 3 -> GLSL shader compile

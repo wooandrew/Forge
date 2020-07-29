@@ -53,22 +53,35 @@ namespace Forge {
             core->coredata.vkAppName = metadata.vkAppName;
             core->coredata.AppVersion = metadata.version;
 
-            core->init(window);        // Initialize the Engine's core
-
-            int ret = container.autoinit(window, core);        // Automatically initialize Vulkan components
-            if (ret != 0) {                                                                                                                 // If Vulkan component initialization fails
-                std::string msg = "Fatal Error: Failed to initialize Vulkan components with error [" + std::to_string(ret) + "].";          //
-                ASWL::utilities::Logger("E05V2", msg);                                                                                      // then log the error
-                return 6;                                                                                                                   // and return the corresponding error value
+            int ret = core->init(window);        // Initialize the Engine's core
+            if (ret != 0) {
+                std::string msg = "Fatal Error: Failed to initialize engine core with error [" + std::to_string(ret) + "].";
+                ASWL::utilities::Logger("E02C0", msg);
+                return 3;
             }
+
+            // Initialize rendering framework
+            ret = framework->init(window, core);
+            if (ret != 0) {                                                                                                                         // If rendering framework initialization fails
+                std::string msg = "Fatal Error: Failed to initialize engine rendering framework with error [" + std::to_string(ret) + "].";         // 
+                ASWL::utilities::Logger("E03F0", msg);                                                                                              // then log the error
+                return 4;                                                                                                                           // and return the corresponding error value
+            }
+
+            //int ret = container.autoinit(window, core);        // Automatically initialize Vulkan components
+            //if (ret != 0) {                                                                                                                 // If Vulkan component initialization fails
+            //    std::string msg = "Fatal Error: Failed to initialize Vulkan components with error [" + std::to_string(ret) + "].";          //
+            //    ASWL::utilities::Logger("E05V2", msg);                                                                                      // then log the error
+            //    return 6;                                                                                                                   // and return the corresponding error value
+            //}
             
             // Initialize renderer
-            ret = container.initRenderer();
-            if (ret != 0) {                                                                                                         // If renderer initialization fails
-                std::string msg = "Fatal Error: Failed to initialize renderer with error [" + std::to_string(ret) + "].";           //
-                ASWL::utilities::Logger("E06R0", msg);                                                                              // then log the error
-                return 7;                                                                                                           // and return the corresponding error value
-            }
+            //ret = container.initRenderer();
+            //if (ret != 0) {                                                                                                         // If renderer initialization fails
+            //    std::string msg = "Fatal Error: Failed to initialize renderer with error [" + std::to_string(ret) + "].";           //
+            //    ASWL::utilities::Logger("E04R0", msg);                                                                              // then log the error
+            //    return 5;                                                                                                           // and return the corresponding error value
+            //}
         }
 
         return 0;
@@ -84,19 +97,21 @@ namespace Forge {
 
         int renderResult = 0;
 
-        if (metadata.rendermode == RendererType::Render_2D)
-            renderResult = container.render2D.draw(core->gpu->GQueue(), core->gpu->PQueue());
-        else if (metadata.rendermode == RendererType::Render_3D)
-            ASWL::utilities::Logger("XXR3D", "3D Rendering is not yet supported.");
-
-        if (renderResult == 2 || renderResult == 5)
-            int reinitCode = container.reinitialize(window, core->surface);
+        //if (metadata.rendermode == RendererType::Render_2D)
+        //    renderResult = container.render2D.draw(core->gpu->GQueue(), core->gpu->PQueue());
+        //else if (metadata.rendermode == RendererType::Render_3D)
+        //    ASWL::utilities::Logger("XXR3D", "3D Rendering is not yet supported.");
+        //
+        //if (renderResult == 2 || renderResult == 5)
+        //    int reinitCode = container.reinitialize(window, core->surface);
     }
 
     // Set render surface clear color
     void Engine::SetClearColor() {
-        container.cb.SetCanvasClearColor(metadata.clearcolor);
-        container.reinitialize(window, core->surface);
+        //container.cb.SetCanvasClearColor(metadata.clearcolor);
+        //container.reinitialize(window, core->surface);
+
+        framework->reinitialize(window);
     }
 
  
@@ -122,7 +137,8 @@ namespace Forge {
     // Cleanup Engine -> Vulkan/GLFW
     void Engine::cleanup() {
 
-        container.cleanup();
+        //container.cleanup();
+        framework->cleanup();
         core->cleanup();
 
         glfwDestroyWindow(window);      // Destroy window

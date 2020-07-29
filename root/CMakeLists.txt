@@ -11,17 +11,19 @@ add_library(libforge SHARED
     "include/forge.hpp"                 "src/forge.cpp"
     "include/forge_vars.hpp"            "src/forge_vars.cpp"
     "include/engine.hpp"                "src/engine.cpp"
-    #"include/archive/physical_devices.hpp"      "src/archive/physical_devices.cpp"
-    #"include/archive/logical_devices.hpp"       "src/archive/logical_devices.cpp"
-    "include/swapchain.hpp"             "src/swapchain.cpp"
-    "include/pipeline.hpp"              "src/pipeline.cpp"              
-    "include/command_buffers.hpp"       "src/command_buffers.cpp"
-    "include/renderer.hpp"              "src/renderer.cpp"
-    "include/vertex.hpp"                "src/vertex.cpp" 
-    "include/vkcontainer.hpp"           "src/vkcontainer.cpp"  
     "include/core/core.hpp"             "src/core/core.cpp"
     "include/core/graphicscard.hpp"     "src/core/graphicscard.cpp"   
-    "include/app/framework.hpp"         "src/app/framework.cpp")
+    "include/app/framework.hpp"         "src/app/framework.cpp"
+              
+    #"include/archive/physical_devices.hpp"      "src/archive/physical_devices.cpp"
+    #"include/archive/logical_devices.hpp"       "src/archive/logical_devices.cpp"
+    #"include/archive/swapchain.hpp"             "src/archive/swapchain.cpp"
+    #"include/archive/pipeline.hpp"              "src/archive/pipeline.cpp"              
+    #"include/archive/command_buffers.hpp"       "src/archive/command_buffers.cpp"
+    #"include/archive/renderer.hpp"              "src/archive/renderer.cpp"
+    #"include/archive/vertex.hpp"                "src/archive/vertex.cpp" 
+    #"include/archive/vkcontainer.hpp"           "src/archive/vkcontainer.cpp"  
+     "include/app/renderer.hpp" "src/app/renderer.cpp")
 
 include(GenerateExportHeader)
 generate_export_header(libforge)

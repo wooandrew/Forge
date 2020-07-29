@@ -73,6 +73,12 @@ namespace Forge {
     VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);        // Choose surface format
     VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);         // Choose surface present mode
     VkExtent2D ChooseSwapExtent(GLFWwindow* window, const VkSurfaceCapabilitiesKHR& capabilities);              // Choose swap extent -> surface resolution
+
+    // TEMP
+    enum class RendererType {       // Renderer type
+        Render_2D,
+        Render_3D
+    };
 }
 
 #endif // !THEFORGE_VARS
