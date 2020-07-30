@@ -16,6 +16,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <GLM/glm.hpp>
+#include <VMA/vk_mem_alloc.h>
 
 namespace Forge {
 
@@ -44,13 +45,13 @@ namespace Forge {
     };
 
     const std::vector<Vertex> vertices = {
-            {{ 0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-            {{ 0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
-            {{-0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}}
+        {{ 0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+        {{ 0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
+        {{-0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}}
     };
 
     // Create buffer object
-    int CreateBuffer(VkPhysicalDevice& _graphicscard, VkDevice& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+    int CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer& buffer, VmaAllocator& _allocator, VmaAllocation& _allocation);
     // Copy buffer from source to destination
     void CopyBuffer(VkDevice& device, VkCommandPool& cmdPool, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
@@ -78,6 +79,16 @@ namespace Forge {
     enum class RendererType {       // Renderer type
         Render_2D,
         Render_3D
+    };
+
+    enum class ShaderLanguage {
+        THE_FORGE_VK_SHADER_LANGUAGE_SPV,
+        THE_FORGE_VK_SHADER_LANGUAGE_GLSL
+    };
+
+    enum class ShaderType {
+        THE_FORGE_VK_SHADER_TYPE_VERTEX,
+        THE_FORGE_VK_SHADER_TYPE_FRAGMENT
     };
 }
 

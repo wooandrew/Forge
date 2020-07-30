@@ -99,5 +99,5 @@ Miscellaneous
  2  "B0002", "Fatal Error: Failed to find a suitable memory type."
  3  "B0003", "Fatal Error: Failed to allocate memory for the buffer."
  X  "VALID", "Error: Validation Layer ->", msg
--1  "XXR3D", "3D Rendering is not yet supported."                               -> Init 3D Renderer
--1  "SHDRT", "Fatal Error: Only SPIR-V shaders are currently supported."       -> Pipeline 6 shader 3 -> GLSL shader compile
+-1  "XXR3D", "3D Rendering is not yet supported."                             	-> Init 3D Renderer
+-1  "SHDRT", "Fatal Error: Only SPIR-V shaders are currently supported."       	-> Pipeline 6 shader 3 -> GLSL shader compile

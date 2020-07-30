@@ -18,6 +18,3 @@ target_link_libraries(sandbox PRIVATE "libaswl-shared.lib")
 target_compile_definitions(sample PRIVATE VK_USE_PLATFORM_WIN32_KHR)					# REMEMBER TO CHANGE DEPENDING ON PLATFORM
 target_include_directories(sample PRIVATE Vulkan::Vulkan)
 target_link_libraries(sample PRIVATE Vulkan::Vulkan)
-
-# GLFW
-target_link_libraries(sample PRIVATE glfw3.lib)

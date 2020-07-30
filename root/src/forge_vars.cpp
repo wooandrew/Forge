@@ -40,7 +40,7 @@ namespace Forge {
     }
 
     // Create a buffer object
-    int CreateBuffer(VkPhysicalDevice& _graphicscard, VkDevice& device, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
+    int CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer& buffer, VmaAllocator& _allocator, VmaAllocation& _allocation) {
 
         VkBufferCreateInfo bufferInfo = {};                             // bufferInfo specifies the parameters of the buffer object
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;        // Specify bufferInfo as structure type BUFFER_CREATE_INFO
@@ -48,6 +48,15 @@ namespace Forge {
         bufferInfo.usage = usage;                                       // Specify allowed buffer usage
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;             // Specify if buffer can be shared or not between queue families
 
+        VmaAllocationCreateInfo allocInfo = {};             // allocInfo specifies the parameters of the memeory allocation object
+        allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;      // Specify memory usage
+
+        if (vmaCreateBuffer(_allocator, &bufferInfo, &allocInfo, &buffer, &_allocation, nullptr) != VK_SUCCESS) {       // If buffer creation fails
+            ASWL::utilities::Logger("B0000", "Fatal Error: Buffer creation failed.");                                   // then log the error
+            return 1;                                                                                                   // and return the corresponding error value
+        }
+
+        /*
         if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {          // If buffer creation fails
             ASWL::utilities::Logger("B0000", "Fatal Error: Buffer creation failed.");       // then log the error
             return 1;                                                                       // and return the corresponding error value
@@ -89,6 +98,7 @@ namespace Forge {
         }
 
         vkBindBufferMemory(device, buffer, bufferMemory, 0);        // Bind the allocated memory to the buffer
+        */ 
 
         return 0;
     }

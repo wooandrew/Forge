@@ -14,7 +14,8 @@ add_library(libforge SHARED
     "include/core/core.hpp"             "src/core/core.cpp"
     "include/core/graphicscard.hpp"     "src/core/graphicscard.cpp"   
     "include/app/framework.hpp"         "src/app/framework.cpp"
-              
+    "include/app/renderer.hpp" 		    "src/app/renderer.cpp"
+    "src/vk_mem_alloc.cpp"
     #"include/archive/physical_devices.hpp"      "src/archive/physical_devices.cpp"
     #"include/archive/logical_devices.hpp"       "src/archive/logical_devices.cpp"
     #"include/archive/swapchain.hpp"             "src/archive/swapchain.cpp"
@@ -23,7 +24,7 @@ add_library(libforge SHARED
     #"include/archive/renderer.hpp"              "src/archive/renderer.cpp"
     #"include/archive/vertex.hpp"                "src/archive/vertex.cpp" 
     #"include/archive/vkcontainer.hpp"           "src/archive/vkcontainer.cpp"  
-     "include/app/renderer.hpp" "src/app/renderer.cpp")
+    )
 
 include(GenerateExportHeader)
 generate_export_header(libforge)
@@ -34,3 +35,9 @@ target_link_libraries(libforge PRIVATE Vulkan::Vulkan)
 
 target_link_libraries(libforge PRIVATE glfw3.lib)
 target_link_libraries(libforge PRIVATE "libaswl-shared.lib")
+
+#add_library(VMA SHARED
+#    "${CMAKE_SOURCE_DIR}/includes/VMA/vk_mem_alloc.h"
+#    "${CMAKE_SOURCE_DIR}/includes/VMA/vk_mem_alloc.cpp"
+#)
+#target_link_libraries(libforge PRIVATE "${CMAKE_SOURCE_DIR}/includes/VMA/vk_mem_alloc.h")

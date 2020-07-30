@@ -48,9 +48,9 @@ namespace Forge {
         std::vector<VkFence> InFlightFences;                        // List of handles to fence object
         std::vector<VkFence> InFlightImages;                        // List of fences for each image in swapchain
 
-        VkDevice logical_graphics_card;        // Logical graphics card object
-        Swapchain swapchain;                        // Swapchain object instance
-        Pipeline pipeline;                          // Pipeline object instance
+        VkDevice logical_graphics_card;         // Logical graphics card object
+        Swapchain swapchain;                    // Swapchain object instance
+        Pipeline pipeline;                      // Pipeline object instance
 
         std::vector<VkCommandBuffer> cmdBuffers;        // Command buffers
     };

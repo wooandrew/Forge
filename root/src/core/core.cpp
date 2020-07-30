@@ -105,7 +105,7 @@ namespace Forge::Core {
         return 0;
     }
 
-    // Getters
+    // Major Getters
     VkInstance& EngineCore::GetInstance() {         // Returns Vulkan instance on request
         return instance;
     }
@@ -119,6 +119,13 @@ namespace Forge::Core {
         return gpu->LGPU;
     }
 
+    // Minor Getters
+    VkQueue& EngineCore::GetGraphicsQueue() {       // Returns Graphics queue
+        return gpu->graphicsQueue;
+    }
+    VkQueue& EngineCore::GetPresentQueue() {        // Returns Present queue
+        return gpu->presentQueue;
+    }
 
     // Return the extensions required by application
     std::vector<const char*> EngineCore::GetRequiredExtensions() {

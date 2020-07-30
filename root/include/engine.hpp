@@ -21,6 +21,7 @@
 //#include "vkcontainer.hpp"
 #include "core/core.hpp"
 #include "app/framework.hpp"
+#include "app/renderer.hpp"
 
 namespace Forge {    // Wrapper namespace
 
@@ -73,6 +74,7 @@ namespace Forge {    // Wrapper namespace
         GLFWwindow* window;                             // GLFW Window ... it's just the window.
         std::shared_ptr<Core::EngineCore> core;         // TheForge Engine core
         std::shared_ptr<App::Framework> framework;      // Rendering framework
+        App::Renderer renderer;
 
         //VkContainer container;      // Container for Engine's Vulkan components .. To be deprecated
     };

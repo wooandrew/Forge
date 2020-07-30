@@ -363,9 +363,9 @@ namespace Forge::App {
 
         VkPipelineColorBlendAttachmentState colorBlendAttachment = {};                          // colorBlendAttachment specifies the pipeline color blend attachment state
         colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |                        // Set which color component is enabled for writing (R) RED
-            VK_COLOR_COMPONENT_G_BIT |                        // Set which color component is enabled for writing (G) GREEN
-            VK_COLOR_COMPONENT_B_BIT |                        // Set which color component is enabled for writing (B) BLUE
-            VK_COLOR_COMPONENT_A_BIT;                         // Set which color component is enabled for writing (A) ALPHA
+                                              VK_COLOR_COMPONENT_G_BIT |                        // Set which color component is enabled for writing (G) GREEN
+                                              VK_COLOR_COMPONENT_B_BIT |                        // Set which color component is enabled for writing (B) BLUE
+                                              VK_COLOR_COMPONENT_A_BIT;                         // Set which color component is enabled for writing (A) ALPHA
         colorBlendAttachment.blendEnable = VK_TRUE;                                             // Set whether or not color blending is enabled
         colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;                   // Set color blending source factor
         colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;         // Set color blending destination factor
@@ -463,6 +463,30 @@ namespace Forge::App {
             ASWL::utilities::Logger("SHDRT", "Fatal Error: Only SPIR-V shaders are currently supported.");
             return -1;
         }
+    }
+
+    // Returns swapchain object on request
+    VkSwapchainKHR& Framework::GetSwapchain() {
+        return swapchain;
+    }
+    // Returns RenderPass object on request
+    VkRenderPass& Framework::GetRenderPass() {
+        return RenderPass;
+    }
+    // Returns framebuffers on request
+    std::vector<VkFramebuffer>& Framework::GetFramebuffers() {
+        return framebuffers;
+    }
+    // Returns pipeline object on request
+    VkPipeline& Framework::GetPipeline() {
+        return pipeline;
+    }
+
+    VkExtent2D& Framework::GetExtent() {                // Returns swapchain extent on request
+        return extent;
+    }
+    std::vector<VkImage>& Framework::GetImages() {      // Returns list of handles to image objects
+        return images;
     }
 
     // Cleanup framework

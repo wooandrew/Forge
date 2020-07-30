@@ -16,20 +16,11 @@
 #include <ASWL/utilities.hpp>
 
 // TheForge includes
+#include "forge_vars.hpp"
 #include "core/core.hpp"
 //#include "core/graphicscard.hpp"
 
 namespace Forge::App {
-
-    enum class ShaderLanguage {
-        THE_FORGE_VK_SHADER_LANGUAGE_SPV,
-        THE_FORGE_VK_SHADER_LANGUAGE_GLSL
-    };
-
-    enum class ShaderType {
-        THE_FORGE_VK_SHADER_TYPE_VERTEX,
-        THE_FORGE_VK_SHADER_TYPE_FRAGMENT
-    };
 
     class Framework {
 
@@ -51,6 +42,16 @@ namespace Forge::App {
 
         int init(GLFWwindow* _window, std::shared_ptr<Core::EngineCore> _core);         // Initialize the rendering framework
         int reinitialize(GLFWwindow* _window);                                          // Reinitialize rendering framework
+
+        // Major component getters
+        VkSwapchainKHR& GetSwapchain();                     // Returns swapchain object
+        VkRenderPass& GetRenderPass();                      // Returns RenderPass object
+        std::vector<VkFramebuffer>& GetFramebuffers();      // Returns framebuffers
+        VkPipeline& GetPipeline();                          // Returns pipeline object
+
+        // Minor component getters
+        VkExtent2D& GetExtent();                // Returns swapchain extent
+        std::vector<VkImage>& GetImages();      // Returns list of handles to image objects
 
         // Cleanup framework
         void cleanup();

@@ -8,9 +8,15 @@
 // Standard Library
 #include <memory>
 
+// Dependencies
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+#include <VMA/vk_mem_alloc.h>
+
 // TheForge includes
 #include "core/core.hpp"
 #include "framework.hpp"
+#include "forge_vars.hpp"
 
 namespace Forge::App {
 
@@ -30,13 +36,34 @@ namespace Forge::App {
         Renderer();         // Default constructor
         ~Renderer();        // Default destructor
 
-        int init(std::shared_ptr<Core::EngineCore> _core, std::shared_ptr<App::Framework> _framework);         // Initialize renderer
+        int init(std::shared_ptr<Core::EngineCore> _core, std::shared_ptr<App::Framework> _framework);          // Initialize renderer
+
+        int draw();         // Draw frame
+
+        void cleanup();     // Cleanup renderer
+
+        RendererType type;
 
     private:
+
+        int CreateCommandBuffers();
 
         std::shared_ptr<Core::EngineCore> core;
         std::shared_ptr<App::Framework> framework;
 
+        VkClearValue clearCanvasColor;      // Canvas clearing color
+        VmaAllocator allocator;             // VulkanMemeoryAllocator
+
+        VkBuffer VertexBuffer;              // Handle to buffer object
+        VmaAllocation vbAllocation;         // Vertex Buffer Memory allocation object
+
+        VkCommandPool CommandPool;                      // Handle to VkCommandPool object
+        std::vector<VkCommandBuffer> cmdBuffers;        // List of handles to command buffers
+
+        std::vector<VkSemaphore> ImageAvailableSemaphores;          // List of handles to semaphore signal -> image aquired
+        std::vector<VkSemaphore> RenderFinishedSemaphores;          // List of handles to semaphore signal -> render finished
+        std::vector<VkFence> InFlightFences;                        // List of handles to fence object
+        std::vector<VkFence> InFlightImages;                        // List of fences for each image in swapchain
     };
 }
 

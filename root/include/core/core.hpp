@@ -57,11 +57,15 @@ namespace Forge {
 
             int init(GLFWwindow* window);       // Initialize Forge::Core
 
-            // Getters
+            // Major Getters
             VkInstance& GetInstance();          // Returns Vulkan instance
             VkSurfaceKHR& GetSurface();         // Reutnrs Vulkan surface
             VkPhysicalDevice& GetPGPU();        // Returns Physical Graphics Card
             VkDevice& GetLGPU();                // Returns Logical Graphics Card
+
+            // Minor Getters
+            VkQueue& GetGraphicsQueue();        // Returns Graphics queue
+            VkQueue& GetPresentQueue();         // Returns Present queue
 
         private:
 

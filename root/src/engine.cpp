@@ -82,6 +82,8 @@ namespace Forge {
             //    ASWL::utilities::Logger("E04R0", msg);                                                                              // then log the error
             //    return 5;                                                                                                           // and return the corresponding error value
             //}
+
+            renderer.init(core, framework);
         }
 
         return 0;
@@ -96,7 +98,7 @@ namespace Forge {
     void Engine::draw() {
 
         int renderResult = 0;
-
+        renderer.draw();
         //if (metadata.rendermode == RendererType::Render_2D)
         //    renderResult = container.render2D.draw(core->gpu->GQueue(), core->gpu->PQueue());
         //else if (metadata.rendermode == RendererType::Render_3D)
@@ -138,6 +140,7 @@ namespace Forge {
     void Engine::cleanup() {
 
         //container.cleanup();
+        renderer.cleanup();
         framework->cleanup();
         core->cleanup();
 
