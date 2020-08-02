@@ -11,14 +11,12 @@
 #include <memory>
 
 // Dependencies
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include <vulkan/vulkan.hpp>
 #include <ASWL/utilities.hpp>
 
 // TheForge includes
 #include "forge_vars.hpp"
 #include "core/core.hpp"
-//#include "core/graphicscard.hpp"
 
 namespace Forge::App {
 

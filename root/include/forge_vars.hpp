@@ -13,10 +13,9 @@
 #include <optional>
 
 // Dependencies
-#define GLFW_INCLUDE_VULKAN
+#include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 #include <GLM/glm.hpp>
-#include <VMA/vk_mem_alloc.h>
 
 namespace Forge {
 
@@ -44,16 +43,16 @@ namespace Forge {
         static std::array<VkVertexInputAttributeDescription, 2> GetAttributeDesciptions();
     };
 
-    const std::vector<Vertex> vertices = {
+    const Vertex vertices[] = {
         {{ 0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
         {{ 0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
         {{-0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}}
     };
 
     // Create buffer object
-    int CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer& buffer, VmaAllocator& _allocator, VmaAllocation& _allocation);
-    // Copy buffer from source to destination
-    void CopyBuffer(VkDevice& device, VkCommandPool& cmdPool, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+    //int CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer& buffer, VmaAllocator& _allocator, VmaAllocation& _allocation);
+    //// Copy buffer from source to destination
+    //void CopyBuffer(VkDevice& device, VkCommandPool& cmdPool, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
     struct QueueFamilyIndices {                         // Struct containing Queue Family indices
 

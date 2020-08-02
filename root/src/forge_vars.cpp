@@ -39,6 +39,7 @@ namespace Forge {
         return attributeDescriptions;
     }
 
+    /*
     // Create a buffer object
     int CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer& buffer, VmaAllocator& _allocator, VmaAllocation& _allocation) {
 
@@ -56,7 +57,6 @@ namespace Forge {
             return 1;                                                                                                   // and return the corresponding error value
         }
 
-        /*
         if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {          // If buffer creation fails
             ASWL::utilities::Logger("B0000", "Fatal Error: Buffer creation failed.");       // then log the error
             return 1;                                                                       // and return the corresponding error value
@@ -98,7 +98,7 @@ namespace Forge {
         }
 
         vkBindBufferMemory(device, buffer, bufferMemory, 0);        // Bind the allocated memory to the buffer
-        */ 
+        
 
         return 0;
     }
@@ -123,7 +123,7 @@ namespace Forge {
 
         VkBufferCopy copyRegion = {};
 
-    }
+    }*/
 
     // Function determines if all optional values in QueueFamilyIndices has a value
     bool QueueFamilyIndices::hasValue() {

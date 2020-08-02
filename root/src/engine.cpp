@@ -68,21 +68,6 @@ namespace Forge {
                 return 4;                                                                                                                           // and return the corresponding error value
             }
 
-            //int ret = container.autoinit(window, core);        // Automatically initialize Vulkan components
-            //if (ret != 0) {                                                                                                                 // If Vulkan component initialization fails
-            //    std::string msg = "Fatal Error: Failed to initialize Vulkan components with error [" + std::to_string(ret) + "].";          //
-            //    ASWL::utilities::Logger("E05V2", msg);                                                                                      // then log the error
-            //    return 6;                                                                                                                   // and return the corresponding error value
-            //}
-            
-            // Initialize renderer
-            //ret = container.initRenderer();
-            //if (ret != 0) {                                                                                                         // If renderer initialization fails
-            //    std::string msg = "Fatal Error: Failed to initialize renderer with error [" + std::to_string(ret) + "].";           //
-            //    ASWL::utilities::Logger("E04R0", msg);                                                                              // then log the error
-            //    return 5;                                                                                                           // and return the corresponding error value
-            //}
-
             renderer.init(core, framework);
         }
 
@@ -110,9 +95,6 @@ namespace Forge {
 
     // Set render surface clear color
     void Engine::SetClearColor() {
-        //container.cb.SetCanvasClearColor(metadata.clearcolor);
-        //container.reinitialize(window, core->surface);
-
         framework->reinitialize(window);
     }
 

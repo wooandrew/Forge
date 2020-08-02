@@ -11,6 +11,8 @@ namespace Forge::App {
     // Default constructor
     Framework::Framework() {
 
+        core = nullptr;
+
         swapchain = VK_NULL_HANDLE;
         RenderPass = VK_NULL_HANDLE;
         PipelineLayout = VK_NULL_HANDLE;

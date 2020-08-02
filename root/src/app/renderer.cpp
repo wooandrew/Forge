@@ -10,8 +10,8 @@ namespace Forge::App {
     // Default constructor
     Renderer::Renderer() {
 
-        core = std::make_shared<Core::EngineCore>();
-        framework = std::make_shared<Framework>();
+        core = nullptr;
+        framework = nullptr;
 
         clearCanvasColor = { 1.f, 1.f, 1.f, 0.f };
 
@@ -55,21 +55,63 @@ namespace Forge::App {
         }
 
         // Vertex buffer size
-        VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+        VkDeviceSize bufferSize = sizeof(vertices) * _countof(vertices);
 
         VkBufferCreateInfo bufferInfo = {};                             // bufferInfo specifies the parameters of the buffer object
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;        // Specify bufferInfo as structure type BUFFER_CREATE_INFO
-        bufferInfo.size = bufferSize;                                         // Size of buffer in bytes
-        bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;                                       // Specify allowed buffer usage
-        //bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;             // Specify if buffer can be shared or not between queue families
+        bufferInfo.size = bufferSize;                                   // Size of buffer in bytes
+        bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;            // Specify buffer usage
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;             // Specify if buffer can be shared or not between queue families
 
-        VmaAllocationCreateInfo allocInfo = {};             // allocInfo specifies the parameters of the memeory allocation object
-        allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;      // Specify memory usage
+        VmaAllocationCreateInfo allocInfo = {};                 // allocInfo specifies the parameters of the memeory allocation object
+        allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;          // Specify memory usage
+        allocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;     // allocInfo flags
 
-        if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &VertexBuffer, &vbAllocation, nullptr) != VK_SUCCESS) {       // If buffer creation fails
-            ASWL::utilities::Logger("B0000", "Fatal Error: Buffer creation failed.");                                   // then log the error
-            return 1;                                                                                                   // and return the corresponding error value
+        VkBuffer stagingBuffer = VK_NULL_HANDLE;
+        VmaAllocation stagingAlloc = VK_NULL_HANDLE;
+        VmaAllocationInfo stagingAllocInfo = {};
+
+        if (vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &stagingBuffer, &stagingAlloc, &stagingAllocInfo) != VK_SUCCESS) {      // If staging vertex buffer creation fails
+            ASWL::utilities::Logger("B0000", "Fatal Error: Staging Buffer creation failed.");                                           // then log the error
+            return 1;                                                                                                                   // and return the corresponding error value
         }
+
+        std::memcpy(stagingAllocInfo.pMappedData, vertices, bufferSize);
+
+        bufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+        allocInfo.flags = 0;
+        vmaCreateBuffer(allocator, &bufferInfo, &allocInfo, &VertexBuffer, &vbAllocation, nullptr);
+
+        VkCommandBufferBeginInfo cmdBufBeginInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
+        cmdBufBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+        VkCommandBufferAllocateInfo cbAllocInfo = {};                                     // allocInfo specifies the parameters of the command buffer allocation info
+        cbAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;               // Identify allocInfo as structure type COMMAND_BUFFER_ALLOCATE_INFO
+        cbAllocInfo.commandPool = CommandPool;                                            // Set command pool
+        cbAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;                              // Set command buffer level
+        cbAllocInfo.commandBufferCount = 1;        // Number of command buffers
+        VkCommandBuffer g_hTemporaryCommandBuffer;
+        vkAllocateCommandBuffers(core->GetLGPU(), &cbAllocInfo, &g_hTemporaryCommandBuffer);
+
+        vkBeginCommandBuffer(g_hTemporaryCommandBuffer, &cmdBufBeginInfo);
+
+        VkBufferCopy vbCopyRegion = {};
+        vbCopyRegion.srcOffset = 0;
+        vbCopyRegion.dstOffset = 0;
+        vbCopyRegion.size = bufferInfo.size;
+        vkCmdCopyBuffer(g_hTemporaryCommandBuffer, stagingBuffer, VertexBuffer, 1, &vbCopyRegion);
+
+        vkEndCommandBuffer(g_hTemporaryCommandBuffer);
+
+        VkSubmitInfo submitInfo = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+        submitInfo.commandBufferCount = 1;
+        submitInfo.pCommandBuffers = &g_hTemporaryCommandBuffer;
+
+        vkQueueSubmit(core->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+        vkQueueWaitIdle(core->GetGraphicsQueue());
+
+        vmaDestroyBuffer(allocator, stagingBuffer, stagingAlloc);
 
         //// Create a vertex buffer object
         //if (CreateBuffer(bufferSize, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VertexBuffer, allocator, vbAllocation) != VK_SUCCESS) {      // If vertex staging buffer creation fails
@@ -137,14 +179,8 @@ namespace Forge::App {
         // Iterate through every command buffer
         for (size_t i = 0; i < cmdBuffers.size(); i++) {
 
-            VkCommandBufferBeginInfo beginInfo = {};                                // beginInfo specifies the parameters of the command buffer begin operation
-            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;          // Identify beginInfo as structure type COMMAND_BUFFER_BEGIN_INFO
-
-            if (vkBeginCommandBuffer(cmdBuffers[i], &beginInfo) != VK_SUCCESS) {                                                // If beginning command buffer fails
-                std::string msg = "Fatal Error: Failed to begin command buffer at index [" + std::to_string(i) + "].";          // 
-                ASWL::utilities::Logger("R04C2", msg);                                                                          // then log the error
-                return 5;                                                                                                       // and return the corresponding value
-            }
+            VkCommandBufferBeginInfo beginInfo = {};                            // beginInfo specifies the parameters of the command buffer begin operation
+            beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;      // Identify beginInfo as structure type COMMAND_BUFFER_BEGIN_INFO
 
             VkRenderPassBeginInfo renderpassBeginInfo = {};                             // renderpassBeginInfo specifies the parameters of the render pass begin operation
             renderpassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;       // Identify renderpassBeginInfo as structure type RENDER_PASS_BEGIN_INFO
@@ -158,10 +194,16 @@ namespace Forge::App {
             VkBuffer buffers[] = { VertexBuffer };      // Array of vertex buffers
             VkDeviceSize offsets[] = { 0 };             // Vulkan device memory size/offset
 
+            if (vkBeginCommandBuffer(cmdBuffers[i], &beginInfo) != VK_SUCCESS) {                                                // If beginning command buffer fails
+                std::string msg = "Fatal Error: Failed to begin command buffer at index [" + std::to_string(i) + "].";          // 
+                ASWL::utilities::Logger("R04C2", msg);                                                                          // then log the error
+                return 5;                                                                                                       // and return the corresponding value
+            }
+
             vkCmdBeginRenderPass(cmdBuffers[i], &renderpassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);              // Start a new render pass
             vkCmdBindPipeline(cmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, framework->GetPipeline());        // Bind pipeline object to command buffer
             vkCmdBindVertexBuffers(cmdBuffers[i], 0, 1, buffers, offsets);                                      // Bind vertex buffer
-            vkCmdDraw(cmdBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);                          // Draw primitive
+            vkCmdDraw(cmdBuffers[i], static_cast<uint32_t>(_countof(vertices)), 1, 0, 0);                       // Draw primitive
             vkCmdEndRenderPass(cmdBuffers[i]);                                                                  // End render pass
 
             if (vkEndCommandBuffer(cmdBuffers[i]) != VK_SUCCESS) {                                                          // If ending command buffer fails

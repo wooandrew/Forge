@@ -18,7 +18,6 @@
 
 // TheForge includes
 #include "forge_vars.hpp"
-//#include "vkcontainer.hpp"
 #include "core/core.hpp"
 #include "app/framework.hpp"
 #include "app/renderer.hpp"
