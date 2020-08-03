@@ -80,17 +80,19 @@ namespace Forge {
     }
 
     // Draw frames
-    void Engine::draw() {
+    int Engine::draw() {
 
-        int renderResult = 0;
-        renderer.draw();
-        //if (metadata.rendermode == RendererType::Render_2D)
-        //    renderResult = container.render2D.draw(core->gpu->GQueue(), core->gpu->PQueue());
-        //else if (metadata.rendermode == RendererType::Render_3D)
-        //    ASWL::utilities::Logger("XXR3D", "3D Rendering is not yet supported.");
-        //
-        //if (renderResult == 2 || renderResult == 5)
-        //    int reinitCode = container.reinitialize(window, core->surface);
+        int ret = renderer.draw();
+
+        if (ret == 16 || ret == 19) {
+
+            if (framework->reinitialize(window) != 0)
+                return 5;
+            if (renderer.reinitialize() != 0)
+                return 6;
+        }
+
+        return 0;
     }
 
     // Set render surface clear color
@@ -103,14 +105,13 @@ namespace Forge {
     GLFWwindow* Engine::GetWindow() {
         return window;
     }
-
-    // Return the Vulkan instance on request
+    // Return the Vulkan instance on request /// TO DEPRECATE
     VkInstance& Engine::GetInstance() {
-        return core->instance;
+        return core->GetInstance();
     }
-    // Returns the Vulkan surface on request
+    // Returns the Vulkan surface on request /// TO DEPRECATE
     VkSurfaceKHR& Engine::GetSurface() {
-        return core->surface;
+        return core->GetSurface();
     }
 
     // Return whether or not window should close based on polled events

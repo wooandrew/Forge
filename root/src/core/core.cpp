@@ -23,18 +23,6 @@ namespace Forge::Core {
 
     }
 
-    void EngineCore::cleanup() {
-
-        gpu->cleanup();         // Cleanup graphics card object
-
-        vkDestroySurfaceKHR(instance, surface, nullptr);        // Destroy Vulkan surface
-
-        if (DEBUG_MODE)                                                             // If DEBUG_MODE is enabled
-            DestroyDebugUtilsMessengerEXT(instance, dbgMessenger, nullptr);         // Destroy Debug Message handler
-
-        vkDestroyInstance(instance, nullptr);       // Destroy Vulkan instance
-    }
-
     // Initialize engine core
     int EngineCore::init(GLFWwindow* window) {
 
@@ -232,5 +220,17 @@ namespace Forge::Core {
                                     | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;          // Set message filter -> PERFORAMANCE
         debugCreateInfo.pfnUserCallback = DebugCallback;                                        // Pointer to Debug Callback function
         debugCreateInfo.pUserData = nullptr;                                                    // Optional pointer to user inputted data
+    }
+
+    void EngineCore::cleanup() {
+
+        gpu->cleanup();         // Cleanup graphics card object
+
+        vkDestroySurfaceKHR(instance, surface, nullptr);        // Destroy Vulkan surface
+
+        if (DEBUG_MODE)                                                             // If DEBUG_MODE is enabled
+            DestroyDebugUtilsMessengerEXT(instance, dbgMessenger, nullptr);         // Destroy Debug Message handler
+
+        vkDestroyInstance(instance, nullptr);       // Destroy Vulkan instance
     }
 }

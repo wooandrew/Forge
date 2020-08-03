@@ -56,13 +56,13 @@ namespace Forge {    // Wrapper namespace
         void cleanup();         // Cleanup Engine, Vulkan, and GLFW
 
         void update();          // Reinitialize swapchain Update the engine. This function should be called every iteration.
-        void draw();            // Draw frames
+        int draw();             // Draw frames
 
         void SetClearColor();       // Set canvas clear color
 
         GLFWwindow* GetWindow();                // Returns the window instance
-        VkInstance& GetInstance();              // Returns the Vulkan instance
-        VkSurfaceKHR& GetSurface();             // Returns the Vulkan surface
+        VkInstance& GetInstance();              // Returns the Vulkan instance /// TO DEPRECATE
+        VkSurfaceKHR& GetSurface();             // Returns the Vulkan surface  /// TO DEPRECATE
 
         bool WindowShouldClose() const;         // Return if window should close
 
@@ -73,7 +73,7 @@ namespace Forge {    // Wrapper namespace
         GLFWwindow* window;                             // GLFW Window ... it's just the window.
         std::shared_ptr<Core::EngineCore> core;         // TheForge Engine core
         std::shared_ptr<App::Framework> framework;      // Rendering framework
-        App::Renderer renderer;
+        App::Renderer renderer;                         // Renderer
 
         //VkContainer container;      // Container for Engine's Vulkan components .. To be deprecated
     };

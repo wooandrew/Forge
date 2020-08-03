@@ -23,7 +23,7 @@ Engine Core: Graphics Card
 3   "GC002", "Fatal Error: Failed to find GPU that supports required Vulkan operation."
 
 App Framework
-X   "F0000", "Framework initialization status is [" + rSC + " | " + rRP + " | " + rFB + " | " + rPL + "]."
+X   "F0000", "Framework initialization status is [" + rSC + "|" + rRP + "|" + rFB + "|" + rPL + "]."
 
 App Framework: Reinitialize
 2   "F0001", "Fatal Error: Failed to reinitialize framework with error [" + status + "]."
@@ -46,52 +46,43 @@ App Framework: Pipeline
 11  "F10P4", "Fatal Error: Failed to load shader from [" + path + "]."
 
 
+App Renderer
+X   "R0000", "Renderer initialization status is [" + acS + "|" + cpS + "|" + vbS + "|" + cbS + "|" + spS + "]."
 
+App Renderer: Reinitialize
+2   "R1RI0", "Fatal Error: Failed to reinitialize command buffers."
 
+App Renderer: Temporary Command Buffer
+3   "R2TB0", "Fatal Error: Failed to start temporary command buffer."
+4   "R3TB1", "Fatal Error: Failed to stop temporary command buffer."
+5   "R4TB2", "Fatal Error: Failed to submit graphics queue to temporary command buffer."
+6   "R5TB3", "Fatal Error: Failed to wait for queue to become idle."
 
+App Renderer: Allocator
+7   "R06V0", "Fatal Error: Failed to create vertex buffer."
 
+App Renderer: Command Pool/Buffer
+8   "R07C0", "Fatal Error: Failed to create command pool."
+9   "R08C1", "Fatal Error: Failed to create temporary command buffer."
 
+App Renderer: Vertex Buffer
+10  "R09V0", "Fatal Error: Staging Buffer creation failed."
+11  "R10V1", "Fatal Error: Vertex Buffer creation failed."
 
-VkContainer
-1   "VKC00", "Fatal Error: Failed to reinitialize swapchain with error [" + status + "]."
+App Renderer: Command Pool/Buffer /2
+12  "R11C2", "Fatal Error: Failed to allocate command buffers."
+13  "R12C3", "Fatal Error: Failed to begin command buffer at index [" + index + "]."
+14  "R13C4", "Fatal Error: Failed to end command buffer at index [" + index + "]."
 
-Physical Device
-1   "PD0G0", "Fatal Error: Failed to find GPU that supports Vulkan."
-2   "PD1G1", "Fatal Error: Failed to find GPU that supports required Vulkan operation."
+App Renderer: Semaphores/Fences
+15  "R14S0", "Fatal Error: Failed to create semaphore/fence object at index [" + index + "]."
 
-Logical Device
-1   "L00G0", "Fatal Error: Failed to create a logical device -> graphics card."
-
-Swapchain
-1   "S0000", "Fatal Error: Failed to create swapchain."
-2   "S0001", "Fatal Error: Failed to create Image View."
-3   "S02F0", "Fatal Error: Failed to create swapchain framebuffer at index [" + index + "]."
-
-Pipeline
-1   "P00R0", "Fatal Error: Render Pass creation failed."
-2   "P01S0", "Fatal Error: Failed to create vertex shader module."
-3   "P02S1", "Fatal Error: Failed to create fragment shader module."
-4   "P0003", "Fatal Error: Failed to create pipeline layout."
-5   "P0004", "Fatal Error: Failed to create graphics pipeline."
-6   "P05S2", "Fatal Error: Failed to load shader from [" + path + "]."
-
-Command Buffers
-1   "CB0P0", "Fatal Error: Failed to create command pool."
-2   "CB001", "Fatal Error: Failed to allocate command buffers."
-3   "CB002", "Fatal Error: Failed to begin command buffer at index [" + index + "]."
-4   "CB003", "Fatal Error: Failed to end command buffer at index [" + index + "]."
-
-Renderer
-1   "2D0S0", "Fatal Error: Failed to create semaphore/fence object at index [" + index + "]."
-2   "R01S0", "Error: Swapchain out of date."
-3   "R02S1", "Error: Failed to acquire an image from the swapchain."
-4   "R03D0", "Error: Failed to submit semaphore/command buffer sequence to graphics queue."
-5   "R04S2", "Error: Swapcahin is suboptimal and must be reinitialized."
-6   "R05Q0", "Error: Failed to queue an image from the swapchain to render."
-
-Vertex
-1   "V00B0", "Fatal Error: Failed to create the staging buffer."
-2   "V01B1", "Fatal Error: Failed to create the vertex buffer."
+App Renderer: Draw
+16  "R15D0", "Error: Swapchain out of date."
+17  "R16D1", "Error: Failed to acquire an image from the swapchain."
+18  "R17D2", "Error: Failed to submit semaphore/command buffer sequence to graphics queue."
+19  "R19D3", "Error: Swapcahin is suboptimal and must be reinitialized."
+20  "R20D4", "Error: Failed to queue an image from the swapchain to render."
 
 
 Miscellaneous

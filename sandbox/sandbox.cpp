@@ -46,10 +46,10 @@ int main() {
     while (!e.WindowShouldClose()) {
 
         e.update();
-        e.draw();
-
         
-
+        if (e.draw() != 0)
+            break;
+    
         //num++;
         //e.metadata.clearcolor = { std::fmod(num, 255.f) / 255.f, std::fmod(num, 255.f) / 255.f, std::fmod(num, 255.f) / 255.f, 0.f };
         //e.SetClearColor();

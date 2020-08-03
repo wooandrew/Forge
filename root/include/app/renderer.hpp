@@ -35,17 +35,25 @@ namespace Forge::App {
         Renderer();         // Default constructor
         ~Renderer();        // Default destructor
 
-        int init(std::shared_ptr<Core::EngineCore> _core, std::shared_ptr<App::Framework> _framework);          // Initialize renderer
+        int init(std::shared_ptr<Core::EngineCore> _core, std::shared_ptr<App::Framework> _framework);      // Initialize renderer
+        int reinitialize();                                                                                 // Reinitialize renderer
 
         int draw();         // Draw frame
 
         void cleanup();     // Cleanup renderer
 
-        RendererType type;
+        RendererType type;      // Renderer type
 
     private:
 
-        int CreateCommandBuffers();
+        int StartSingleTimeCommand();       // Start temporary command buffer
+        int EndSingleTimeCommand();         // Stop temporary command buffer
+
+        int CreateAllocator();              // Create allocator
+        int CreateCommandPool();            // Create CommandPool
+        int CreateVertexBuffer();           // Create VertexBuffer
+        int CreateCommandBuffers();         // Create command buffers
+        int CreateSemaphores();             // Create rendering semaphores and fences
 
         std::shared_ptr<Core::EngineCore> core;
         std::shared_ptr<App::Framework> framework;
@@ -58,6 +66,7 @@ namespace Forge::App {
 
         VkCommandPool CommandPool;                      // Handle to VkCommandPool object
         std::vector<VkCommandBuffer> cmdBuffers;        // List of handles to command buffers
+        VkCommandBuffer TempCommandBuffer;              // Command buffer for single time uses
 
         std::vector<VkSemaphore> ImageAvailableSemaphores;          // List of handles to semaphore signal -> image aquired
         std::vector<VkSemaphore> RenderFinishedSemaphores;          // List of handles to semaphore signal -> render finished

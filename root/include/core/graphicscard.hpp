@@ -38,8 +38,8 @@ namespace Forge::Core {
         int SelectGraphicsCard(VkInstance& _instance, VkSurfaceKHR& _surface);        // Selects the physical graphics card to use
 
         // Temp Getters .. to be deprecated
-        VkQueue& GQueue() { return graphicsQueue; };
-        VkQueue& PQueue() { return presentQueue; };
+        VkQueue& GQueue() { return graphicsQueue; };     /// DEPRECATED 08/02/2020 - TO BE REMOVED
+        VkQueue& PQueue() { return presentQueue; };      /// DEPRECATED 08/02/2020 - TO BE REMOVED
 
     private:
 
