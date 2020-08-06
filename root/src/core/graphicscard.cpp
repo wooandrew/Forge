@@ -1,7 +1,7 @@
 // TheForge - src/core/graphicscard (c) Andrew Woo, 2020
 
+#include "forge.hpp"
 #include "core/graphicscard.hpp"
-#include "forge_vars.hpp"
 
 #include <set>
 
@@ -53,6 +53,9 @@ namespace Forge::Core {
 
         PGPU = VK_NULL_HANDLE;
         LGPU = VK_NULL_HANDLE;
+
+        graphicsQueue = VK_NULL_HANDLE;
+        presentQueue = VK_NULL_HANDLE;
     }
 
     // Default destructor
@@ -112,9 +115,9 @@ namespace Forge::Core {
             createInfo.ppEnabledLayerNames = nullptr;       // and do not pass any validation layers to enable
         }
 
-        if (vkCreateDevice(PGPU, &createInfo, nullptr, &LGPU) != VK_SUCCESS) {                                          // If device creation fails
-            ASWL::utilities::Logger("GC000", "Fatal Error: Failed to create a logical device -> graphics card.");       // then log the error
-            return 1;                                                                                                   // and return corresponding error value
+        if (vkCreateDevice(PGPU, &createInfo, nullptr, &LGPU) != VK_SUCCESS) {                          // If device creation fails
+            Logger("GC000", "Fatal Error: Failed to create a logical device -> graphics card.");        // then log the error
+            return 1;                                                                                   // and return corresponding error value
         }
 
         // Retrieves queue handles for queue family
@@ -130,9 +133,9 @@ namespace Forge::Core {
         uint32_t deviceCount = 0;                                           // Number of devices that support Vulkan
         vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);       // Get number of devices that support Vulkan
 
-        if (deviceCount == 0) {                                                                             // If there are no devices that support Vulkan
-            ASWL::utilities::Logger("GC001", "Fatal Error: Failed to find GPU that supports Vulkan.");      // then log the error
-            return 2;                                                                                       // and return the error
+        if (deviceCount == 0) {                                                             // If there are no devices that support Vulkan
+            Logger("GC001", "Fatal Error: Failed to find GPU that supports Vulkan.");       // then log the error
+            return 2;                                                                       // and return the error
         }
 
         std::vector<VkPhysicalDevice> devices(deviceCount);                         // Initialize list of supported devices
@@ -147,9 +150,9 @@ namespace Forge::Core {
             }
         }
 
-        if (PGPU == VK_NULL_HANDLE) {                                                                                           // If the GPU is null
-            ASWL::utilities::Logger("GC002", "Fatal Error: Failed to find GPU that supports required Vulkan operation.");       // then log the error
-            return 3;                                                                                                           // and return the error
+        if (PGPU == VK_NULL_HANDLE) {                                                                           // If the GPU is null
+            Logger("GC002", "Fatal Error: Failed to find GPU that supports required Vulkan operation.");        // then log the error
+            return 3;                                                                                           // and return the error
         }
 
         return 0;

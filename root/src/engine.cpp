@@ -2,6 +2,7 @@
 
 
 #include "engine.hpp"
+#include "forge.hpp"
 
 #include <cstring>
 
@@ -25,8 +26,8 @@ namespace Forge {
 
         // Initialize GLFW
         if (!glfwInit()) {
-            ASWL::utilities::Logger("E00G0", "Fatal Error: Failed to initialize GLFW -> !glfwInit().");     // Log the error if GLFW fails to initialize
-            return 1;                                                                                       // then return the corresponding error value
+            Logger("E00G0", "Fatal Error: Failed to initialize GLFW -> !glfwInit().");      // Log the error if GLFW fails to initialize
+            return 1;                                                                       // then return the corresponding error value
         }
 
         // Set the window hint using engine metadata. Defaulted to (GLFW_CLIENT_API, GLFW_NO_API) and (GLFW_RESIZABLE, GLFW_FALSE).                    
@@ -36,11 +37,11 @@ namespace Forge {
         // Create window using engine metadata
         window = glfwCreateWindow(metadata.windowDimensions.width, metadata.windowDimensions.height, metadata.windowTitle, nullptr, nullptr);
 
-        if (!window) {                                                                                              // Check window creation status
-            ASWL::utilities::Logger("E01G1", "Fatal Error: Failed to create window -> !glfwCreateWindow().");       // Log the error if window creation fails
-            glfwTerminate();                                                                                        // terminate GLFW
+        if (!window) {                                                                              // Check window creation status
+            Logger("E01G1", "Fatal Error: Failed to create window -> !glfwCreateWindow().");        // Log the error if window creation fails
+            glfwTerminate();                                                                        // terminate GLFW
 
-            return 2;                                                                                               // then return the corresponding error value
+            return 2;                                                                               // then return the corresponding error value
         }
 
         // Create window context
@@ -53,22 +54,29 @@ namespace Forge {
             core->coredata.vkAppName = metadata.vkAppName;
             core->coredata.AppVersion = metadata.version;
 
-            int ret = core->init(window);        // Initialize the Engine's core
-            if (ret != 0) {
-                std::string msg = "Fatal Error: Failed to initialize engine core with error [" + std::to_string(ret) + "].";
-                ASWL::utilities::Logger("E02C0", msg);
-                return 3;
+            // Initialize the Engine's core
+            int ret = core->init(window);
+            if (ret != FORGE_SUCCESS) {                                                                                             // If engine core initialization fails
+                std::string msg = "Fatal Error: Failed to initialize engine core with error [" + std::to_string(ret) + "].";        //
+                Logger("E02C0", msg);                                                                                               // then log the error
+                return 3;                                                                                                           // and return the corresponding error value
             }
 
             // Initialize rendering framework
             ret = framework->init(window, core);
-            if (ret != 0) {                                                                                                                         // If rendering framework initialization fails
+            if (ret != FORGE_SUCCESS) {                                                                                                             // If rendering framework initialization fails
                 std::string msg = "Fatal Error: Failed to initialize engine rendering framework with error [" + std::to_string(ret) + "].";         // 
-                ASWL::utilities::Logger("E03F0", msg);                                                                                              // then log the error
+                Logger("E03F0", msg);                                                                                                               // then log the error
                 return 4;                                                                                                                           // and return the corresponding error value
             }
 
-            renderer.init(core, framework);
+            // Initialize renderer
+            ret = renderer.init(core, framework);
+            if (ret != FORGE_SUCCESS) {                                                                                         // If renderer initialization fails
+                std::string msg = "Fatal Error: Failed to initialize renderer with error [" + std::to_string(ret) + "].";       //
+                Logger("E04R0", msg);                                                                                           // then log the error
+                return 5;                                                                                                       // and return the corresponding error value
+            }
         }
 
         return 0;
@@ -86,10 +94,16 @@ namespace Forge {
 
         if (ret == 16 || ret == 19) {
 
-            if (framework->reinitialize(window) != 0)
+            int reinitFramework = framework->reinitialize(window);
+            if (reinitFramework != 0)
                 return 5;
-            if (renderer.reinitialize() != 0)
+
+            int reinitRenderer = renderer.reinitialize();
+            if (reinitRenderer != 0)
                 return 6;
+
+            if (reinitFramework + reinitRenderer == 0)
+                Logger("E05D0", "Renderer reinitialization succeeded.");
         }
 
         return 0;

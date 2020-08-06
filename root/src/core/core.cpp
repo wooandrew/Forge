@@ -3,7 +3,7 @@
 #pragma warning(disable : 26812)
 
 #include "core/core.hpp"
-#include "forge_vars.hpp"
+#include "forge.hpp"
 
 namespace Forge::Core {
 
@@ -26,9 +26,9 @@ namespace Forge::Core {
     // Initialize engine core
     int EngineCore::init(GLFWwindow* window) {
 
-        if (DEBUG_MODE && !AllValidationLayersSupported()) {                                                    // If DEBUG_MODE is enabled and the required validation layers are not found
-            ASWL::utilities::Logger("EC0V0", "Fatal Error: Requested validation layers were not found.");       // then log the error
-            return 1;                                                                                           // then return the corresponding error value
+        if (DEBUG_MODE && !AllValidationLayersSupported()) {                                    // If DEBUG_MODE is enabled and the required validation layers are not found
+            Logger("EC0V0", "Fatal Error: Requested validation layers were not found.");        // then log the error
+            return 1;                                                                           // then return the corresponding error value
         }
 
         // TheForge version
@@ -75,16 +75,16 @@ namespace Forge::Core {
             createInfo.pNext = nullptr;             // Set pointer to debug create info to null
         }
 
-        if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {                                      // If vkInstance creation fails
-            ASWL::utilities::Logger("EC1V1", "Fatal Error: Failed to create instance -> vkCreateInstance().");      // then log the error
-            return 2;                                                                                               // and return corresponding error value
+        if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {                      // If vkInstance creation fails
+            Logger("EC1V1", "Fatal Error: Failed to create instance -> vkCreateInstance().");       // then log the error
+            return 2;                                                                               // and return corresponding error value
         }
 
         SetupDebugMessenger();
 
-        if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {           // If vkSurface creation fails
-            ASWL::utilities::Logger("EC2S0", "Fatal Error: Window surface creation failed.");       // then log the error
-            return 3;                                                                               // and return corresponding error value
+        if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {       // If vkSurface creation fails
+            Logger("EC2S0", "Fatal Error: Window surface creation failed.");                    // then log the error
+            return 3;                                                                           // and return corresponding error value
         }
 
         // Initialize GPU object
@@ -174,7 +174,7 @@ namespace Forge::Core {
         PopulateDebugMessengerCreateInfo(debugCreateInfo);      // Populate the struct
 
         if (CreateDebugUtilsMessengerEXT(instance, &debugCreateInfo, nullptr, &dbgMessenger) != VK_SUCCESS)     // If DebuMessenger creation fails
-            ASWL::utilities::Logger("EC3V2", "Error: Failed to setup debug messenger.");                        // Log the message
+            Logger("EC3V2", "Error: Failed to setup debug messenger.");                                         // Log the message
     }
 
     VkResult EngineCore::CreateDebugUtilsMessengerEXT(VkInstance instance,                                  // Vulkan Instance
@@ -203,7 +203,7 @@ namespace Forge::Core {
                                                        void* pUsrData)                                                  // Pointer to struct allowing user to pass data
     {
         std::string msg = "Error: Validation Layer -> " + std::string(pCallbackData->pMessage);
-        ASWL::utilities::Logger("VALID", msg);      // Log the error
+        Logger("VALID", msg);       // Log the error
         return VK_FALSE;
     }
 

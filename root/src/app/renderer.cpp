@@ -1,9 +1,10 @@
 // TheForge - src/app/renderer (c) Andrew Woo, 2020
 
 #pragma warning(disable : 26812)
+#pragma warning(disable : 6385)
+#pragma warning(disable : 6387)
 
 #include "app/renderer.hpp"
-#include <ASWL/utilities.hpp>
 
 namespace Forge::App {
 
@@ -28,7 +29,7 @@ namespace Forge::App {
     }
 
     // Initialize renderer
-    int Renderer::init(std::shared_ptr<Core::EngineCore> _core, std::shared_ptr<App::Framework> _framework) {
+    int Renderer::init(std::shared_ptr<Forge::Core::EngineCore> _core, std::shared_ptr<App::Framework> _framework) {
 
         core = _core;
         framework = _framework;
@@ -40,7 +41,7 @@ namespace Forge::App {
         int spS = CreateSemaphores();
 
         std::string msg = "Renderer initialization status is [" + std::to_string(acS) + "|" + std::to_string(cpS) + "|" + std::to_string(vbS) + "|" + std::to_string(cbS) + "|" + std::to_string(spS) + "].";
-        ASWL::utilities::Logger("R0000", msg);
+        Logger("R0000", msg);
 
         return acS+ cpS + vbS + cbS + spS;
     }
@@ -52,9 +53,9 @@ namespace Forge::App {
         // Free command buffers before recreation
         vkFreeCommandBuffers(core->GetLGPU(), CommandPool, static_cast<uint32_t>(cmdBuffers.size()), cmdBuffers.data());
 
-        if (CreateCommandBuffers() != 0) {                                                                  // If command buffer reinitialization fails
-            ASWL::utilities::Logger("R1RI0", "Fatal Error: Failed to reinitialize command buffers.");       // then log the error
-            return 2;                                                                                       // and return the corresponding error value
+        if (CreateCommandBuffers() != 0) {                                                  // If command buffer reinitialization fails
+            Logger("R1RI0", "Fatal Error: Failed to reinitialize command buffers.");        // then log the error
+            return 2;                                                                       // and return the corresponding error value
         }
 
         return 0;
@@ -66,9 +67,9 @@ namespace Forge::App {
         VkCommandBufferBeginInfo cmdBufBeginInfo = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO };
         cmdBufBeginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-        if (vkBeginCommandBuffer(TempCommandBuffer, &cmdBufBeginInfo) != VK_SUCCESS) {                          // If temporary command buffer fails to start properly
-            ASWL::utilities::Logger("R2TB0", "Fatal Error: Failed to start temporary command buffer.");         // then log the error
-            return 3;                                                                                           // and return the corresponding error value
+        if (vkBeginCommandBuffer(TempCommandBuffer, &cmdBufBeginInfo) != VK_SUCCESS) {          // If temporary command buffer fails to start properly
+            Logger("R2TB0", "Fatal Error: Failed to start temporary command buffer.");          // then log the error
+            return 3;                                                                           // and return the corresponding error value
         }
 
         return 0;
@@ -77,22 +78,22 @@ namespace Forge::App {
     // Stop temporary command buffer
     int Renderer::EndSingleTimeCommand() {
 
-        if (vkEndCommandBuffer(TempCommandBuffer) != VK_SUCCESS) {                                          // If temporary command buffer fails to end properly
-            ASWL::utilities::Logger("R3TB1", "Fatal Error: Failed to stop temporary command buffer.");      // then log the error
-            return 4;                                                                                       // and return the corresponding error value
+        if (vkEndCommandBuffer(TempCommandBuffer) != VK_SUCCESS) {                          // If temporary command buffer fails to end properly
+            Logger("R3TB1", "Fatal Error: Failed to stop temporary command buffer.");       // then log the error
+            return 4;                                                                       // and return the corresponding error value
         }
 
         VkSubmitInfo submitInfo = { VK_STRUCTURE_TYPE_SUBMIT_INFO };        // submitInfo specifies queue submit operation properties
         submitInfo.commandBufferCount = 1;                                  // Specify amount of command buffers
         submitInfo.pCommandBuffers = &TempCommandBuffer;                    // Pass temp command buffer
 
-        if (vkQueueSubmit(core->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {                                // If submiting graphics queue fails
-            ASWL::utilities::Logger("R4TB2", "Fatal Error: Failed to submit graphics queue to temporary command buffer.");          // then log the error
-            return 5;                                                                                                               // and return the corresponding error value
+        if (vkQueueSubmit(core->GetGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {            // If submiting graphics queue fails
+            Logger("R4TB2", "Fatal Error: Failed to submit graphics queue to temporary command buffer.");       // then log the error
+            return 5;                                                                                           // and return the corresponding error value
         }
-        if (vkQueueWaitIdle(core->GetGraphicsQueue()) != VK_SUCCESS) {                                          // If vkQueueWaitIdle fails
-            ASWL::utilities::Logger("R5TB3", "Fatal Error: Failed to wait for queue to become idle.");          // then log the error
-            return 6;                                                                                           // and return the corresponding error value
+        if (vkQueueWaitIdle(core->GetGraphicsQueue()) != VK_SUCCESS) {                      // If vkQueueWaitIdle fails
+            Logger("R5TB3", "Fatal Error: Failed to wait for queue to become idle.");       // then log the error
+            return 6;                                                                       // and return the corresponding error value
         }
 
         return 0;
@@ -106,10 +107,12 @@ namespace Forge::App {
         allocatorInfo.device = core->GetLGPU();             // Pass logical graphics card
         allocatorInfo.instance = core->GetInstance();       // Pass Vulkan instance
 
-        if (vmaCreateAllocator(&allocatorInfo, &allocator) != VK_SUCCESS) {                         // If memory allocator creation fails
-            ASWL::utilities::Logger("R06V0", "Fatal Error: Failed to create vertex buffer.");       // then log the error
-            return 7;                                                                               // and return the corresponding error value
+        if (vmaCreateAllocator(&allocatorInfo, &allocator) != VK_SUCCESS) {         // If memory allocator creation fails
+            Logger("R06V0", "Fatal Error: Failed to create vertex buffer.");        // then log the error
+            return 7;                                                               // and return the corresponding error value
         }
+
+        return 0;
     }
 
     // Create CommandPool on call
@@ -123,7 +126,7 @@ namespace Forge::App {
         commandPoolInfo.flags = 0;                                                          // Set flags
 
         if (vkCreateCommandPool(core->GetLGPU(), &commandPoolInfo, nullptr, &CommandPool) != VK_SUCCESS) {      // If command pool creation fails
-            ASWL::utilities::Logger("R07C0", "Fatal Error: Failed to create command pool.");                    // then log the error
+            Logger("R07C0", "Fatal Error: Failed to create command pool.");                                     // then log the error
             return 8;                                                                                           // and return the corresponding value
         }
 
@@ -134,9 +137,11 @@ namespace Forge::App {
         tCbAllocInfo.commandBufferCount = 1;                                        // Number of command buffers
 
         if (vkAllocateCommandBuffers(core->GetLGPU(), &tCbAllocInfo, &TempCommandBuffer) != VK_SUCCESS) {       // If temporary command buffer creation fails
-            ASWL::utilities::Logger("R08C1", "Fatal Error: Failed to create temporary command buffer.");        // then log the error
+            Logger("R08C1", "Fatal Error: Failed to create temporary command buffer.");                         // then log the error
             return 9;                                                                                           // and return the corresponding error value
         }
+
+        return 0;
     }
 
     // Create VertexBuffer on call
@@ -160,7 +165,7 @@ namespace Forge::App {
         VmaAllocationInfo sVbAllocInfo = {};            // Create staging buffer allocation info
 
         if (vmaCreateBuffer(allocator, &vbCreateInfo, &vbAllocInfo, &vbStaging, &sVbAlloc, &sVbAllocInfo) != VK_SUCCESS) {      // If staging buffer creation fails
-            ASWL::utilities::Logger("R09V0", "Fatal Error: Staging Buffer creation failed.");                                   // then log the error
+            Logger("R09V0", "Fatal Error: Staging Buffer creation failed.");                                                    // then log the error
             return 10;                                                                                                          // and return the corresponding error value
         }
 
@@ -171,7 +176,7 @@ namespace Forge::App {
         vbAllocInfo.flags = 0;                                                                              // vbAllocInfo has no flags
         
         if (vmaCreateBuffer(allocator, &vbCreateInfo, &vbAllocInfo, &VertexBuffer, &vbAllocation, nullptr) != VK_SUCCESS) {     // If vertex buffer creation fails
-            ASWL::utilities::Logger("R10V1", "Fatal Error: Vertex Buffer creation failed.");                                    // then log the error
+            Logger("R10V1", "Fatal Error: Vertex Buffer creation failed.");                                                     // then log the error
             return 11;                                                                                                          // and return the corresponding error value
         }
 
@@ -213,7 +218,7 @@ namespace Forge::App {
         allocInfo.commandBufferCount = static_cast<uint32_t>(cmdBuffers.size());        // Number of command buffers
 
         if (vkAllocateCommandBuffers(core->GetLGPU(), &allocInfo, cmdBuffers.data()) != VK_SUCCESS) {       // If command buffer allocation fails
-            ASWL::utilities::Logger("R11C2", "Fatal Error: Failed to allocate command buffers.");           // then log the error
+            Logger("R11C2", "Fatal Error: Failed to allocate command buffers.");                            // then log the error
             return 12;                                                                                      // and return the corresponding value
         }
 
@@ -237,7 +242,7 @@ namespace Forge::App {
 
             if (vkBeginCommandBuffer(cmdBuffers[i], &beginInfo) != VK_SUCCESS) {                                                // If beginning command buffer fails
                 std::string msg = "Fatal Error: Failed to begin command buffer at index [" + std::to_string(i) + "].";          // 
-                ASWL::utilities::Logger("R12C3", msg);                                                                          // then log the error
+                Logger("R12C3", msg);                                                                                           // then log the error
                 return 13;                                                                                                      // and return the corresponding value
             }
 
@@ -249,7 +254,7 @@ namespace Forge::App {
 
             if (vkEndCommandBuffer(cmdBuffers[i]) != VK_SUCCESS) {                                                          // If ending command buffer fails
                 std::string msg = "Fatal Error: Failed to end command buffer at index [" + std::to_string(i) + "].";        // 
-                ASWL::utilities::Logger("R13C4", msg);                                                                      // then log the error
+                Logger("R13C4", msg);                                                                                       // then log the error
                 return 14;                                                                                                  // and return the corresponding value
             }
         }
@@ -282,13 +287,13 @@ namespace Forge::App {
                     vkCreateFence(core->GetLGPU(), &fenceCreateInfo, nullptr, &InFlightFences[i]) != VK_SUCCESS) {                          // or fence creation fails
 
                     std::string msg = "Fatal Error: Failed to create semaphore/fence object at index [" + std::to_string(i) + "].";         //
-                    ASWL::utilities::Logger("R14S0", msg);                                                                                  // then log the error
+                    Logger("R14S0", msg);                                                                                                   // then log the error
                     return 15;                                                                                                              // and return the corresponding error value
                 }
             }
         }
         else if (type == RendererType::Render_3D) {         // If the renderer is a 3D renderer
-            ASWL::utilities::Logger("XXR3D", "3D Rendering is not yet supported.");
+            Logger("XXR3D", "3D Rendering is not yet supported.");
             return -1;
         }
 
@@ -307,16 +312,16 @@ namespace Forge::App {
         // Acquire next image to render from swapchain at imageIndex
         VkResult acquireResult = vkAcquireNextImageKHR(core->GetLGPU(), framework->GetSwapchain(), UINT64_MAX, ImageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
-        if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {                            // If the swapchain goes out of date
-            ASWL::utilities::Logger("R15D0", "Error: Swapchain out of date.");      // then log the error
-            return 16;                                                              // and return the corresponding error value
+        if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {            // If the swapchain goes out of date
+            Logger("R15D0", "Error: Swapchain out of date.");       // then log the error
+            return 16;                                              // and return the corresponding error value
         }
         else if (acquireResult == VK_SUBOPTIMAL_KHR)        // If the swapchain becomes suboptimal
             swapchainSubOptimal = true;                     // flag swapchain to be reinitialized
 
-        else if (acquireResult != VK_SUCCESS) {                                                                 // If acquiring an image to render from the swapchain fails
-            ASWL::utilities::Logger("R16D1", "Error: Failed to acquire an image from the swapchain.");          // then log the error
-            return 17;                                                                                          // and return the corresponding error value
+        else if (acquireResult != VK_SUCCESS) {                                             // If acquiring an image to render from the swapchain fails
+            Logger("R16D1", "Error: Failed to acquire an image from the swapchain.");       // then log the error
+            return 17;                                                                      // and return the corresponding error value
         }
 
         if (InFlightImages[imageIndex] != VK_NULL_HANDLE)                                                   // If previous frame is using the fence
@@ -342,9 +347,9 @@ namespace Forge::App {
 
         vkResetFences(core->GetLGPU(), 1, &InFlightFences[currentFrame]);      // Reset fence
 
-        if (vkQueueSubmit(core->GetGraphicsQueue(), 1, &submitInfo, InFlightFences[currentFrame]) != VK_SUCCESS) {                  // If semaphore or command buffer sequence submission to queue fails
-            ASWL::utilities::Logger("R17D2", "Error: Failed to submit semaphore/command buffer sequence to graphics queue.");       // then log the error
-            return 18;                                                                                                              // and stop the rendering process
+        if (vkQueueSubmit(core->GetGraphicsQueue(), 1, &submitInfo, InFlightFences[currentFrame]) != VK_SUCCESS) {      // If semaphore or command buffer sequence submission to queue fails
+            Logger("R17D2", "Error: Failed to submit semaphore/command buffer sequence to graphics queue.");            // then log the error
+            return 18;                                                                                                  // and stop the rendering process
         }
 
         VkSwapchainKHR swapchains[] = { framework->GetSwapchain() };        // List of swapchains
@@ -361,17 +366,17 @@ namespace Forge::App {
         // Queue an image to render
         VkResult queuePresentResult = vkQueuePresentKHR(core->GetPresentQueue(), &presentInfo);
 
-        if (queuePresentResult == VK_ERROR_OUT_OF_DATE_KHR) {                       // If the swapchain goes out of date
-            ASWL::utilities::Logger("R15D0", "Error: Swapchain out of date.");      // then log the error
-            return 16;                                                              // and return the corresponding error value
+        if (queuePresentResult == VK_ERROR_OUT_OF_DATE_KHR) {       // If the swapchain goes out of date
+            Logger("R15D0", "Error: Swapchain out of date.");       // then log the error
+            return 16;                                              // and return the corresponding error value
         }
-        else if (queuePresentResult == VK_SUBOPTIMAL_KHR || swapchainSubOptimal) {                              // If the swapchain becomes suboptimal
-            ASWL::utilities::Logger("R19D3", "Error: Swapcahin is suboptimal and must be reinitialized.");      // then log the error
-            return 19;                                                                                          // and return the corresponding error value
+        else if (queuePresentResult == VK_SUBOPTIMAL_KHR || swapchainSubOptimal) {              // If the swapchain becomes suboptimal
+            Logger("R19D3", "Error: Swapcahin is suboptimal and must be reinitialized.");       // then log the error
+            return 19;                                                                          // and return the corresponding error value
         }
-        else if (queuePresentResult != VK_SUCCESS) {                                                                    // If acquiring an image to render from the swapchain fails
-            ASWL::utilities::Logger("R20D4", "Error: Failed to queue an image from the swapchain to render.");          // then log the error
-            return 20;                                                                                                  // and return the corresponding error value
+        else if (queuePresentResult != VK_SUCCESS) {                                                // If acquiring an image to render from the swapchain fails
+            Logger("R20D4", "Error: Failed to queue an image from the swapchain to render.");       // then log the error
+            return 20;                                                                              // and return the corresponding error value
         }
 
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;       // Track which frame is being rendered

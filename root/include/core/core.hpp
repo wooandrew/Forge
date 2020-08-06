@@ -22,7 +22,7 @@ namespace Forge::Core {
 
         struct CoreData { // Struct containing engine core initialization data
 
-            ASWL::utilities::Version ForgeVersion;                  // Engine version
+            ASWL::utilities::Version ForgeVersion;          // Engine version
 
             // Vulkan initialization metadata
             const char* vkAppName = "vkForgeDefault";       // Application name

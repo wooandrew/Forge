@@ -15,7 +15,7 @@
 #include <ASWL/utilities.hpp>
 
 // TheForge includes
-#include "forge_vars.hpp"
+#include "forge.hpp"
 #include "core/core.hpp"
 
 namespace Forge::App {

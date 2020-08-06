@@ -1,4 +1,4 @@
-// Vulkan Engine.cpp : Defines the entry point for the application.
+// sandbox.cpp : TheForge Engine function testing sandbox
 
 // #define GLM_FORCE_RADIANS
 // #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -8,19 +8,18 @@
 #include <iostream>
 #include <string>
 
+#include <forge.hpp>
 #include <engine.hpp>
-
-#include <ASWL/utilities.hpp>
 
 int main() {
 
-    util::Logger("00000", "Hello, this is a test.");
+    Forge::Logger("00000", "Hello, this is a test.");
 
     Forge::Engine e;
 
     auto CLOG = [=](std::string belt, int ret) {
         std::string m00001 = belt + " [" + std::to_string(ret) + "] returned by TheForge.";
-        ASWL::utilities::Logger("00001", m00001);
+        Forge::Logger("00001", m00001);
     };
 
     CLOG("CLOG-TEST", 0);
@@ -29,7 +28,7 @@ int main() {
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
     std::string m00002 = "[" + std::to_string(extensionCount) + "] extensions supported.";
-    ASWL::utilities::Logger("00002", m00002);
+    Forge::Logger("00002", m00002);
 
     e.metadata.vkAppName = "TheForge Sandbox";
     e.metadata.windowTitle = "TheForge Sandbox";

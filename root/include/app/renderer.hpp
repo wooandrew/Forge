@@ -13,9 +13,9 @@
 #include <VMA/vk_mem_alloc.h>
 
 // TheForge includes
+#include "forge.hpp"
 #include "core/core.hpp"
 #include "framework.hpp"
-#include "forge_vars.hpp"
 
 namespace Forge::App {
 
@@ -35,8 +35,8 @@ namespace Forge::App {
         Renderer();         // Default constructor
         ~Renderer();        // Default destructor
 
-        int init(std::shared_ptr<Core::EngineCore> _core, std::shared_ptr<App::Framework> _framework);      // Initialize renderer
-        int reinitialize();                                                                                 // Reinitialize renderer
+        int init(std::shared_ptr<Forge::Core::EngineCore> _core, std::shared_ptr<App::Framework> _framework);       // Initialize renderer
+        int reinitialize();                                                                                         // Reinitialize renderer
 
         int draw();         // Draw frame
 
@@ -55,7 +55,7 @@ namespace Forge::App {
         int CreateCommandBuffers();         // Create command buffers
         int CreateSemaphores();             // Create rendering semaphores and fences
 
-        std::shared_ptr<Core::EngineCore> core;
+        std::shared_ptr<Forge::Core::EngineCore> core;
         std::shared_ptr<App::Framework> framework;
 
         VkClearValue clearCanvasColor;      // Canvas clearing color

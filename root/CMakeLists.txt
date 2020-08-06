@@ -9,7 +9,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib")
 add_library(libforge SHARED 
 
     "include/forge.hpp"                 "src/forge.cpp"
-    "include/forge_vars.hpp"            "src/forge_vars.cpp"
+                
     "include/engine.hpp"                "src/engine.cpp"
     "include/core/core.hpp"             "src/core/core.cpp"
     "include/core/graphicscard.hpp"     "src/core/graphicscard.cpp"   
@@ -32,12 +32,6 @@ generate_export_header(libforge)
 target_compile_definitions(libforge PRIVATE VK_USE_PLATFORM_WIN32_KHR)					# REMEMBER TO CHANGE DEPENDING ON PLATFORM
 target_include_directories(libforge PRIVATE Vulkan::Vulkan)
 target_link_libraries(libforge PRIVATE Vulkan::Vulkan)
-
-#add_library(VMA SHARED
-#    "${CMAKE_SOURCE_DIR}/includes/VMA/vk_mem_alloc.h"
-#    "${CMAKE_SOURCE_DIR}/includes/VMA/vk_mem_alloc.cpp"
-#)
-#target_link_libraries(libforge PRIVATE VMA)
 
 target_link_libraries(libforge PRIVATE glfw3.lib)
 target_link_libraries(libforge PRIVATE "libaswl-shared.lib")

@@ -7,7 +7,6 @@
 
 // Dependencies
 #include <vulkan/vulkan.hpp>
-#include <ASWL/utilities.hpp>
 
 namespace Forge::Core {
 

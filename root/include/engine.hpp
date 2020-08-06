@@ -17,7 +17,7 @@
 #include <ASWL/utilities.hpp>
 
 // TheForge includes
-#include "forge_vars.hpp"
+#include "forge.hpp"
 #include "core/core.hpp"
 #include "app/framework.hpp"
 #include "app/renderer.hpp"
@@ -35,6 +35,7 @@ namespace Forge {    // Wrapper namespace
 
             // Engine metadata
             bool autoinit = true;       // Automatically initialize engine components
+            bool debugmode = false;     // Enable debug mode
 
             VkClearValue clearcolor = { 1.f, 1.f, 1.f, 0.f };       // Render surface clear color
             RendererType rendermode = RendererType::Render_2D;      // Engine render mode
