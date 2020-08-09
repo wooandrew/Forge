@@ -14,13 +14,12 @@
 // Dependencies
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include <ASWL/utilities.hpp>
 
 // TheForge includes
 #include "forge.hpp"
-#include "core/core.hpp"
-#include "app/framework.hpp"
-#include "app/renderer.hpp"
+#include "core.hpp"
+#include "framework.hpp"
+#include "renderer.hpp"
 
 namespace Forge {    // Wrapper namespace
 
@@ -42,14 +41,14 @@ namespace Forge {    // Wrapper namespace
 
             // Vulkan initialization metadata
             const char* vkAppName = "vkForgeDefault";       // VkApp app name
-            ASWL::utilities::Version version;               // Application version
+            Version version;                                // Application version
 
             // GLFW window initialization metadata
-            std::vector<std::pair<int, int>> windowHints{ { std::make_pair(GLFW_CLIENT_API, GLFW_NO_API),               // Window hints _ default (GLFW_CLIENT_API, GLFW_NO_API)
-                                                            std::make_pair(GLFW_RESIZABLE, GLFW_TRUE) } };              // Window hints _ default (GLFW_RESIZABLE, GLFW_FALSE)
+            std::vector<std::pair<int, int>> windowHints{ { std::make_pair(GLFW_CLIENT_API, GLFW_NO_API),           // Window hints _ default (GLFW_CLIENT_API, GLFW_NO_API)
+                                                            std::make_pair(GLFW_RESIZABLE, GLFW_TRUE) } };          // Window hints _ default (GLFW_RESIZABLE, GLFW_FALSE)
 
-            const char* windowTitle = "vkForgeDefault";                                                                 // Window title
-            ASWL::utilities::Dimensions2D<int> windowDimensions{ ASWL::utilities::make_2d_dimension(1000, 600) };       // Window dimensions (x, y)
+            const char* windowTitle = "vkForgeDefault";                                 // Window title
+            Dimensions2D<int> windowDimensions = make_2D_dimensions(1000, 600);         // Window dimensions (x, y)
 
         }; Metadata metadata;
 
@@ -67,7 +66,7 @@ namespace Forge {    // Wrapper namespace
 
         bool WindowShouldClose() const;         // Return if window should close
 
-        const ASWL::utilities::Version version;     // Engine version
+        const Version version;      // Engine version
 
     private:
 
@@ -75,8 +74,6 @@ namespace Forge {    // Wrapper namespace
         std::shared_ptr<Core::EngineCore> core;         // TheForge Engine core
         std::shared_ptr<App::Framework> framework;      // Rendering framework
         App::Renderer renderer;                         // Renderer
-
-        //VkContainer container;      // Container for Engine's Vulkan components .. To be deprecated
     };
 }
 

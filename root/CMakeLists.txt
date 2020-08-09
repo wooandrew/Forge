@@ -9,12 +9,11 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/lib")
 add_library(libforge SHARED 
 
     "include/forge.hpp"                 "src/forge.cpp"
-                
     "include/engine.hpp"                "src/engine.cpp"
-    "include/core/core.hpp"             "src/core/core.cpp"
-    "include/core/graphicscard.hpp"     "src/core/graphicscard.cpp"   
-    "include/app/framework.hpp"         "src/app/framework.cpp"
-    "include/app/renderer.hpp" 		    "src/app/renderer.cpp"
+    "include/core.hpp"             "src/core.cpp"
+    "include/graphicscard.hpp"     "src/graphicscard.cpp"   
+    "include/framework.hpp"         "src/framework.cpp"
+    "include/renderer.hpp" 		    "src/renderer.cpp"
 
     #"include/archive/physical_devices.hpp"      "src/archive/physical_devices.cpp"
     #"include/archive/logical_devices.hpp"       "src/archive/logical_devices.cpp"

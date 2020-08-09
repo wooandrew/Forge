@@ -49,9 +49,9 @@ int main() {
         if (e.draw() != 0)
             break;
     
-        //num++;
-        //e.metadata.clearcolor = { std::fmod(num, 255.f) / 255.f, std::fmod(num, 255.f) / 255.f, std::fmod(num, 255.f) / 255.f, 0.f };
-        //e.SetClearColor();
+        // num++;
+        // e.metadata.clearcolor = { std::fmod(num, 255.f) / 255.f, std::fmod(num * 2, 255.f) / 255.f, std::fmod(num * 3, 255.f) / 255.f, 0.f };
+        // e.SetClearColor();
     }
 
     return 0;

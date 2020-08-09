@@ -4,7 +4,7 @@
 
 /// FILE GUIDELINES
 /*  This file must be self-contained.
- *  It should not include and headers
+ *  It should not include any headers
  *  from TheForge's internal library.
  *  Dependencies are allowed.
 **/
@@ -98,6 +98,13 @@ namespace Forge {
         THE_FORGE_VK_SHADER_TYPE_VERTEX,
         THE_FORGE_VK_SHADER_TYPE_FRAGMENT
     };
+
+    // Forge-ASWL wrappers
+    struct Version : public ASWL::utilities::Version {};
+    template<typename T> struct Dimensions2D : public ASWL::utilities::Dimensions2D<T> {};
+    template<typename T> Dimensions2D<T> make_2D_dimensions(T x, T y) {
+        return Dimensions2D<T>({ x, y });
+    }
 
     template <typename ERRCODE, typename ERRMSG> void Logger(ERRCODE errcode, ERRMSG errmsg) {
         ASWL::utilities::Logger(errcode, errmsg);

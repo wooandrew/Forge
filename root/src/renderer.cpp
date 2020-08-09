@@ -1,10 +1,6 @@
 // TheForge - src/app/renderer (c) Andrew Woo, 2020
 
-#pragma warning(disable : 26812)
-#pragma warning(disable : 6385)
-#pragma warning(disable : 6387)
-
-#include "app/renderer.hpp"
+#include "renderer.hpp"
 
 namespace Forge::App {
 
@@ -59,6 +55,10 @@ namespace Forge::App {
         }
 
         return 0;
+    }
+
+    void Renderer::SetClearColor(VkClearValue _clearCanvasColor) {
+        clearCanvasColor = _clearCanvasColor;
     }
 
     // Start temporary command buffer

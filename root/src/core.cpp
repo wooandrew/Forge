@@ -1,9 +1,6 @@
 // TheForge - src/core/core (c) Andrew Woo, 2020
 
-#pragma warning(disable : 26812)
-
-#include "core/core.hpp"
-#include "forge.hpp"
+#include "core.hpp"
 
 namespace Forge::Core {
 

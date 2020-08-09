@@ -12,11 +12,10 @@
 
 // Dependencies
 #include <vulkan/vulkan.hpp>
-#include <ASWL/utilities.hpp>
 
 // TheForge includes
 #include "forge.hpp"
-#include "core/core.hpp"
+#include "core.hpp"
 
 namespace Forge::App {
 

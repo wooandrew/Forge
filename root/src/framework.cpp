@@ -1,8 +1,6 @@
 // TheForge - src/app/framework (c) Andrew Woo, 2020
 
-#pragma warning(disable : 26812)
-
-#include "app/framework.hpp"
+#include "framework.hpp"
 
 namespace Forge::App {
 

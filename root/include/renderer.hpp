@@ -14,7 +14,7 @@
 
 // TheForge includes
 #include "forge.hpp"
-#include "core/core.hpp"
+#include "core.hpp"
 #include "framework.hpp"
 
 namespace Forge::App {
@@ -37,6 +37,8 @@ namespace Forge::App {
 
         int init(std::shared_ptr<Forge::Core::EngineCore> _core, std::shared_ptr<App::Framework> _framework);       // Initialize renderer
         int reinitialize();                                                                                         // Reinitialize renderer
+        
+        void SetClearColor(VkClearValue _clearCanvasColor);
 
         int draw();         // Draw frame
 

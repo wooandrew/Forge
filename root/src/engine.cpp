@@ -95,15 +95,14 @@ namespace Forge {
         if (ret == 16 || ret == 19) {
 
             int reinitFramework = framework->reinitialize(window);
-            if (reinitFramework != 0)
+            if (reinitFramework != FORGE_SUCCESS)
                 return 5;
 
             int reinitRenderer = renderer.reinitialize();
-            if (reinitRenderer != 0)
+            if (reinitRenderer != FORGE_SUCCESS)
                 return 6;
 
-            if (reinitFramework + reinitRenderer == 0)
-                Logger("E05D0", "Renderer reinitialization succeeded.");
+            Logger("E05D0", "Renderer reinitialization succeeded.");
         }
 
         return 0;
@@ -111,7 +110,8 @@ namespace Forge {
 
     // Set render surface clear color
     void Engine::SetClearColor() {
-        framework->reinitialize(window);
+        renderer.SetClearColor(metadata.clearcolor);
+        renderer.reinitialize();
     }
 
  

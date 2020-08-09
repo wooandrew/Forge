@@ -1,7 +1,7 @@
 // TheForge - src/core/graphicscard (c) Andrew Woo, 2020
 
 #include "forge.hpp"
-#include "core/graphicscard.hpp"
+#include "graphicscard.hpp"
 
 #include <set>
 

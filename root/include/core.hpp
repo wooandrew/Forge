@@ -11,10 +11,10 @@
 // Dependencies
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
-#include <ASWL/utilities.hpp>
 
 // TheForge includes
-#include "core/graphicscard.hpp"
+#include "forge.hpp"
+#include "graphicscard.hpp"
 
 namespace Forge::Core {
 
@@ -22,12 +22,11 @@ namespace Forge::Core {
 
         struct CoreData { // Struct containing engine core initialization data
 
-            ASWL::utilities::Version ForgeVersion;          // Engine version
+            Version ForgeVersion;       // Engine version
+            Version AppVersion;         // Application version
 
             // Vulkan initialization metadata
             const char* vkAppName = "vkForgeDefault";       // Application name
-            ASWL::utilities::Version AppVersion;            // Application version
-
         };
     }
 

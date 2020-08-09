@@ -1,4 +1,2 @@
 ADD: Vulkan ERR GUARD
-CHANGE ERROR LOGGING to be handled internally and not depending directly on ASWL.
 CONSTIFY getters
-REMOVE all ASWL dependencies
