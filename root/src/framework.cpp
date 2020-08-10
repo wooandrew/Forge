@@ -24,8 +24,9 @@ namespace Forge::App {
     };
 
     // Initialize App Rendering framework
-    int Framework::init(GLFWwindow* _window, std::shared_ptr<Core::EngineCore> _core) {
+    int Framework::init(std::shared_ptr<Logger> _logger, GLFWwindow* _window, std::shared_ptr<Core::EngineCore> _core) {
 
+        logger = _logger;
         core = _core;
 
         int rSC = initSwapchain(_window);       // Initialize the swapchain object
@@ -34,7 +35,7 @@ namespace Forge::App {
         int rPL = initPipeline();               // Initialize the pipeline object
 
         std::string msg = "Framework initialization status is [" + std::to_string(rSC) + "|" + std::to_string(rRP) + "|" + std::to_string(rFB) + "|" + std::to_string(rPL) + "].";
-        Logger("F0000", msg);
+        logger->log("F0000", msg);
 
         return rSC + rRP + rFB + rPL;       // Return the sum of results
     }
@@ -79,7 +80,7 @@ namespace Forge::App {
         int ret = reinitializeFramework();
         if (ret != 0) {                                                                                                         // If swapchain reinitialization fails
             std::string msg = "Fatal Error: Failed to reinitialize framework with error [" + std::to_string(ret) + "].";        //
-            Logger("F0001", msg);                                                                                               // then log the error
+            logger->log("F0001", msg);                                                                                          // then log the error
             return 2;                                                                                                           // and return the corresponding error value
         }
 
@@ -133,7 +134,7 @@ namespace Forge::App {
         createInfo.oldSwapchain = VK_NULL_HANDLE;                                       // Invalidated/unoptimized swapchains
 
         if (vkCreateSwapchainKHR(core->GetLGPU(), &createInfo, nullptr, &swapchain) != VK_SUCCESS) {        // If vkSwapchain creation fails
-            Logger("F02S0", "Fatal Error: Failed to create swapchain.");                                    // then log the error
+            logger->log("F02S0", "Fatal Error: Failed to create swapchain.");                               // then log the error
             return 3;                                                                                       // and return the corresponding error value
         }
 
@@ -171,7 +172,7 @@ namespace Forge::App {
 
             if (vkCreateImageView(core->GetLGPU(), &createImageViewInfo, nullptr, &ImageViews[i]) != VK_SUCCESS) {          // If image view creation fails
                 std::string msg = "Fatal Error: Failed to create image view at indice [" + std::to_string(i) + "]";         //
-                Logger("F03S1", msg);                                                                                       // then log the error
+                logger->log("F03S1", msg);                                                                                  // then log the error
                 return 4;                                                                                                   // and return the corresponding error value
             }
         }
@@ -218,7 +219,7 @@ namespace Forge::App {
         renderPassInfo.pDependencies = &subpassDependency;                      // Pointer to subpass dependency structure
 
         if (vkCreateRenderPass(core->GetLGPU(), &renderPassInfo, nullptr, &RenderPass) != VK_SUCCESS) {         // If RenderPass creation fails
-            Logger("F04R0", "Fatal Error: Render Pass creation failed.");                                       // then log the error
+            logger->log("F04R0", "Fatal Error: Render Pass creation failed.");                                  // then log the error
             return 5;                                                                                           // and return the corresponding error value
         }
 
@@ -243,7 +244,7 @@ namespace Forge::App {
 
             if (vkCreateFramebuffer(core->GetLGPU(), &framebufferInfo, nullptr, &framebuffers[i]) != VK_SUCCESS) {          // If framebuffer creation fails at index
                 std::string msg = "Fatal Error: Failed to create framebuffer at index [" + std::to_string(i) + "].";        //
-                Logger("F05FB", msg);                                                                                       // then log the error
+                logger->log("F05FB", msg);                                                                                  // then log the error
                 return 6;                                                                                                   // and return the corresponding error
             }
         }
@@ -265,7 +266,7 @@ namespace Forge::App {
 
         VkShaderModule vertShaderModule = VK_NULL_HANDLE;                                               // Vertex Shader Module
         if (vkCreateShaderModule(core->GetLGPU(), &vertCreateInfo, nullptr, &vertShaderModule)) {       // If vertex shader module creation fails
-            Logger("F06P0", "Fatal Error: Failed to create vertex shader module.");                     // then log the error
+            logger->log("F06P0", "Fatal Error: Failed to create vertex shader module.");                // then log the error
             return 7;                                                                                   // and return the corresponding error value
         }
 
@@ -288,7 +289,7 @@ namespace Forge::App {
 
         VkShaderModule fragShaderModule = VK_NULL_HANDLE;                                               // Fragment Shader Module
         if (vkCreateShaderModule(core->GetLGPU(), &fragCreateInfo, nullptr, &fragShaderModule)) {       // If fragment shader module creation fails
-            Logger("F07P1", "Fatal Error: Failed to create fragment shader module.");                   // then log the error
+            logger->log("F07P1", "Fatal Error: Failed to create fragment shader module.");              // then log the error
             return 8;                                                                                   // and return the corresponding error value
         }
 
@@ -394,7 +395,7 @@ namespace Forge::App {
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;       // Identify pipelineLayoutInfo as structure type PIPELINE_LAYOUT_CREATE_INFO
 
         if (vkCreatePipelineLayout(core->GetLGPU(), &pipelineLayoutInfo, nullptr, &PipelineLayout) != VK_SUCCESS) {         // If pipeline layout creation fails
-            Logger("F08P2", "Fatal Error: Failed to create pipeline layout.");                                              // then log the error
+            logger->log("F08P2", "Fatal Error: Failed to create pipeline layout.");                                         // then log the error
             return 9;                                                                                                       // and return the corresponding error value
         }
 
@@ -417,12 +418,12 @@ namespace Forge::App {
         pipelineInfo.basePipelineIndex = -1;                                        // Optional
 
         if (vkCreateGraphicsPipelines(core->GetLGPU(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {       // If graphics pipeline creation fails
-            Logger("F09P3", "Fatal Error: Failed to create graphics pipeline.");                                                    // then log the error
+            logger->log("F09P3", "Fatal Error: Failed to create graphics pipeline.");                                               // then log the error
             return 10;                                                                                                              // and return the corresponding error
         }
 
-        vkDestroyShaderModule(core->GetLGPU(), vertShaderModule, nullptr);
-        vkDestroyShaderModule(core->GetLGPU(), fragShaderModule, nullptr);
+        vkDestroyShaderModule(core->GetLGPU(), vertShaderModule, nullptr);          // Destroy shader modules
+        vkDestroyShaderModule(core->GetLGPU(), fragShaderModule, nullptr);          // Destroy shader modules
 
         return 0;
     }
@@ -438,7 +439,7 @@ namespace Forge::App {
 
             if (!shader.is_open()) {                                                                // If opening shader file fails
                 std::string msg = "Fatal Error: Failed to load shader from [" + path + "].";        //
-                Logger("F10P4", msg);                                                               // then log the error
+                logger->log("F10P4", msg);                                                          // then log the error
                 return 11;                                                                          // and return the corresponding error
             }
 
@@ -458,7 +459,7 @@ namespace Forge::App {
             return 0;
         }
         else {
-            Logger("SHDRT", "Fatal Error: Only SPIR-V shaders are currently supported.");
+            logger->log("SHDRT", "Fatal Error: Only SPIR-V shaders are currently supported.");
             return -1;
         }
     }
@@ -490,6 +491,7 @@ namespace Forge::App {
     // Cleanup framework
     void Framework::cleanup() {
 
+        // Wait until logical device completes all operations
         vkDeviceWaitIdle(core->GetLGPU());
 
         // Cleanup Pipeline

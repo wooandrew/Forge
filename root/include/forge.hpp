@@ -22,7 +22,9 @@
 #include <vulkan/vulkan.hpp>
 #include <GLFW/glfw3.h>
 #include <GLM/glm.hpp>
+
 #include <ASWL/utilities.hpp>
+#include <ASWL/logger.hpp>
 
 namespace Forge {
 
@@ -38,7 +40,7 @@ namespace Forge {
     constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
     constexpr int FORGE_SUCCESS = 0;
-// #define __FORGE_DISABLE_LOGGING_AT_COMPILE_TIME
+
 
     struct Vertex {
 
@@ -57,11 +59,6 @@ namespace Forge {
         {{ 0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
         {{-0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}}
     };
-
-    // Create buffer object
-    //int CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkBuffer& buffer, VmaAllocator& _allocator, VmaAllocation& _allocation);
-    //// Copy buffer from source to destination
-    //void CopyBuffer(VkDevice& device, VkCommandPool& cmdPool, VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 
     struct QueueFamilyIndices {                         // Struct containing Queue Family indices
 
@@ -99,16 +96,16 @@ namespace Forge {
         THE_FORGE_VK_SHADER_TYPE_FRAGMENT
     };
 
-    // Forge-ASWL wrappers
+    // Forge-ASWL wrappers. The end user can redefine these wrappers if they do not wish to use ASWL.
     struct Version : public ASWL::utilities::Version {};
     template<typename T> struct Dimensions2D : public ASWL::utilities::Dimensions2D<T> {};
     template<typename T> Dimensions2D<T> make_2D_dimensions(T x, T y) {
         return Dimensions2D<T>({ x, y });
     }
-
-    template <typename ERRCODE, typename ERRMSG> void Logger(ERRCODE errcode, ERRMSG errmsg) {
-        ASWL::utilities::Logger(errcode, errmsg);
+    template <typename ERRCODE, typename ERRMSG> void _uLogger(ERRCODE errcode, ERRMSG errmsg) {
+        ASWL::utilities::_uLogger(errcode, errmsg);
     }
+    class Logger : public ASWL::utilities::Logger {};
 
     /*
     template<typename FUNCRET, typename ERRCODE, typename ERRMSG, typename RETTYPE> 

@@ -17,4 +17,4 @@ target_link_libraries(sample PRIVATE Vulkan::Vulkan)
 # Dependencies
 target_link_libraries(sandbox PRIVATE glfw3.lib)
 target_link_libraries(sandbox PRIVATE libforge)
-target_link_libraries(sandbox PRIVATE "libaswl-shared.lib")
+target_link_libraries(sandbox PRIVATE "libaswl-shared-debug.lib")

@@ -5,8 +5,14 @@
 #ifndef THEFORGE_CORE_GRAPHICSCARD
 #define THEFORGE_CORE_GRAPHICSCARD
 
+// Standard Library
+#include <memory>
+
 // Dependencies
 #include <vulkan/vulkan.hpp>
+
+// TheForge includes
+#include "forge.hpp"
 
 namespace Forge::Core {
 
@@ -32,7 +38,7 @@ namespace Forge::Core {
         ~GraphicsCard();        // Default destructor
 
         // GraphicsCard object initializer
-        int init(VkInstance& _instance, VkSurfaceKHR& _surface);
+        int init(std::shared_ptr<Logger> _logger, VkInstance& _instance, VkSurfaceKHR& _surface);
 
         int SelectGraphicsCard(VkInstance& _instance, VkSurfaceKHR& _surface);        // Selects the physical graphics card to use
 
@@ -43,6 +49,8 @@ namespace Forge::Core {
     private:
 
         void cleanup();
+
+        std::shared_ptr<Logger> logger;     // Instanced Logger
 
         VkPhysicalDevice PGPU;      // Handle to PhysicalDevice -> Physical Graphics card
         VkDevice LGPU;              // Handle to LogicalDevice  -> Logical Graphics Card

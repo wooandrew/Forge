@@ -37,8 +37,8 @@ namespace Forge::App {
         Framework();        // Default constructor
         ~Framework();       // Default destructor
 
-        int init(GLFWwindow* _window, std::shared_ptr<Core::EngineCore> _core);         // Initialize the rendering framework
-        int reinitialize(GLFWwindow* _window);                                          // Reinitialize rendering framework
+        int init(std::shared_ptr<Logger> _logger, GLFWwindow* _window, std::shared_ptr<Core::EngineCore> _core);        // Initialize the rendering framework
+        int reinitialize(GLFWwindow* _window);                                                                          // Reinitialize rendering framework
 
         // Major component getters
         VkSwapchainKHR& GetSwapchain();                     // Returns swapchain object
@@ -71,6 +71,7 @@ namespace Forge::App {
 
 
         // Private Member Variables
+        std::shared_ptr<Logger> logger;                 // Instanced logger
         std::shared_ptr<Core::EngineCore> core;         // TheForge Engine core
 
         VkSwapchainKHR swapchain;       // Handle to swapchain object

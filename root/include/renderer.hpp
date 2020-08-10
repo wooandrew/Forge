@@ -35,9 +35,10 @@ namespace Forge::App {
         Renderer();         // Default constructor
         ~Renderer();        // Default destructor
 
-        int init(std::shared_ptr<Forge::Core::EngineCore> _core, std::shared_ptr<App::Framework> _framework);       // Initialize renderer
-        int reinitialize();                                                                                         // Reinitialize renderer
+        int init(std::shared_ptr<Logger> _logger, std::shared_ptr<Forge::Core::EngineCore> _core, std::shared_ptr<App::Framework> _framework);      // Initialize renderer
+        int reinitialize();                                                                                                                         // Reinitialize renderer
         
+        // Set the color that the canvas will clear to
         void SetClearColor(VkClearValue _clearCanvasColor);
 
         int draw();         // Draw frame
@@ -57,8 +58,9 @@ namespace Forge::App {
         int CreateCommandBuffers();         // Create command buffers
         int CreateSemaphores();             // Create rendering semaphores and fences
 
-        std::shared_ptr<Forge::Core::EngineCore> core;
-        std::shared_ptr<App::Framework> framework;
+        std::shared_ptr<Logger> logger;                         // Instanced logger
+        std::shared_ptr<Forge::Core::EngineCore> core;          // Engine core
+        std::shared_ptr<App::Framework> framework;              // Rendering framework
 
         VkClearValue clearCanvasColor;      // Canvas clearing color
         VmaAllocator allocator;             // VulkanMemeoryAllocator

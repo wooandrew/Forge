@@ -8,18 +8,19 @@
 #include <iostream>
 #include <string>
 
+#define __FORGE_DISABLE_LOGGING_AT_COMPILE_TIME
 #include <forge.hpp>
 #include <engine.hpp>
 
 int main() {
 
-    Forge::Logger("00000", "Hello, this is a test.");
+    Forge::_uLogger("00000", "Hello, this is a test.");
 
     Forge::Engine e;
 
     auto CLOG = [=](std::string belt, int ret) {
         std::string m00001 = belt + " [" + std::to_string(ret) + "] returned by TheForge.";
-        Forge::Logger("00001", m00001);
+        Forge::_uLogger("00001", m00001);
     };
 
     CLOG("CLOG-TEST", 0);
@@ -28,7 +29,7 @@ int main() {
     vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
     std::string m00002 = "[" + std::to_string(extensionCount) + "] extensions supported.";
-    Forge::Logger("00002", m00002);
+    Forge::_uLogger("00002", m00002);
 
     e.metadata.vkAppName = "TheForge Sandbox";
     e.metadata.windowTitle = "TheForge Sandbox";

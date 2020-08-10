@@ -7,12 +7,14 @@ namespace Forge::Core {
     // Default constructor
     EngineCore::EngineCore() {
 
+        logger = nullptr;       // Logger instance is not initialized
+
         instance = VK_NULL_HANDLE;          // Prepare Vulkan instance for initialization
         surface = VK_NULL_HANDLE;           // Prepare Vulkan surface for initialization
 
         dbgMessenger = VK_NULL_HANDLE;      // Prepare debug messenger for initialization
 
-        gpu = std::make_shared<Core::GraphicsCard>();
+        gpu = std::make_shared<Core::GraphicsCard>();       // Make a graphics card instance
     }
 
     // Default destructor
@@ -21,11 +23,13 @@ namespace Forge::Core {
     }
 
     // Initialize engine core
-    int EngineCore::init(GLFWwindow* window) {
+    int EngineCore::init(std::shared_ptr<Logger> _logger, GLFWwindow* window) {
 
-        if (DEBUG_MODE && !AllValidationLayersSupported()) {                                    // If DEBUG_MODE is enabled and the required validation layers are not found
-            Logger("EC0V0", "Fatal Error: Requested validation layers were not found.");        // then log the error
-            return 1;                                                                           // then return the corresponding error value
+        logger = _logger;
+
+        if (DEBUG_MODE && !AllValidationLayersSupported()) {                                        // If DEBUG_MODE is enabled and the required validation layers are not found
+            logger->log("EC0V0", "Fatal Error: Requested validation layers were not found.");       // then log the error
+            return 1;                                                                               // then return the corresponding error value
         }
 
         // TheForge version
@@ -72,20 +76,20 @@ namespace Forge::Core {
             createInfo.pNext = nullptr;             // Set pointer to debug create info to null
         }
 
-        if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {                      // If vkInstance creation fails
-            Logger("EC1V1", "Fatal Error: Failed to create instance -> vkCreateInstance().");       // then log the error
-            return 2;                                                                               // and return corresponding error value
+        if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {                              // If vkInstance creation fails
+            logger->log("EC1V1", "Fatal Error: Failed to create instance -> vkCreateInstance().");          // then log the error
+            return 2;                                                                                       // and return corresponding error value
         }
 
         SetupDebugMessenger();
 
         if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {       // If vkSurface creation fails
-            Logger("EC2S0", "Fatal Error: Window surface creation failed.");                    // then log the error
+            logger->log("EC2S0", "Fatal Error: Window surface creation failed.");               // then log the error
             return 3;                                                                           // and return corresponding error value
         }
 
         // Initialize GPU object
-        gpu->init(instance, surface);
+        gpu->init(logger, instance, surface);
 
         return 0;
     }
@@ -171,7 +175,7 @@ namespace Forge::Core {
         PopulateDebugMessengerCreateInfo(debugCreateInfo);      // Populate the struct
 
         if (CreateDebugUtilsMessengerEXT(instance, &debugCreateInfo, nullptr, &dbgMessenger) != VK_SUCCESS)     // If DebuMessenger creation fails
-            Logger("EC3V2", "Error: Failed to setup debug messenger.");                                         // Log the message
+            logger->log("EC3V2", "Error: Failed to setup debug messenger.");                                    // Log the message
     }
 
     VkResult EngineCore::CreateDebugUtilsMessengerEXT(VkInstance instance,                                  // Vulkan Instance
@@ -200,7 +204,7 @@ namespace Forge::Core {
                                                        void* pUsrData)                                                  // Pointer to struct allowing user to pass data
     {
         std::string msg = "Error: Validation Layer -> " + std::string(pCallbackData->pMessage);
-        Logger("VALID", msg);       // Log the error
+        _uLogger("VALID", msg);       // Log the error
         return VK_FALSE;
     }
 

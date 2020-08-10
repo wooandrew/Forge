@@ -46,7 +46,7 @@ namespace Forge::Core {
         EngineCore();         // Default constructor
         ~EngineCore();        // Default destructor
 
-        int init(GLFWwindow* window);       // Initialize Forge::Core
+        int init(std::shared_ptr<Logger> _logger, GLFWwindow* window);          // Initialize Forge::Core
 
         CoreData coredata;      // Engine core initialization data
 
@@ -63,6 +63,8 @@ namespace Forge::Core {
         void cleanup();
 
     private:
+
+        std::shared_ptr<Logger> logger;     // Instanced Logger
 
         VkInstance instance;        // Handle to Vulkan instance
         VkSurfaceKHR surface;       // Handle to Vulkan surface

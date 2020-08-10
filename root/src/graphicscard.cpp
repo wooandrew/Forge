@@ -12,12 +12,6 @@ namespace Forge::Core {
         // Checks if the physical device supports necessary Vulkan operations
         bool CheckDeviceSupport(VkPhysicalDevice& _pgpu, VkSurfaceKHR& _surface) {
 
-            //VkPhysicalDeviceProperties deviceProperties;
-            //vkGetPhysicalDeviceProperties(device, &deviceProperties);
-
-            //VkPhysicalDeviceFeatures deviceFeatures;
-            //vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-
             QueueFamilyIndices indices = FindQueueFamilies(_pgpu, _surface);
             bool extensionsSupported = CheckDeviceExtensionSupport(_pgpu);
 
@@ -64,12 +58,14 @@ namespace Forge::Core {
     }
 
     void GraphicsCard::cleanup() {
-        vkDeviceWaitIdle(LGPU);
-        vkDestroyDevice(LGPU, nullptr);       // Destroy logical device
+        vkDeviceWaitIdle(LGPU);                 // Wait until logical device completes all operations
+        vkDestroyDevice(LGPU, nullptr);         // then destroy the logical device
     }
 
     // Initializes graphics card object
-    int GraphicsCard::init(VkInstance& _instance, VkSurfaceKHR& _surface) {
+    int GraphicsCard::init(std::shared_ptr<Logger> _logger, VkInstance& _instance, VkSurfaceKHR& _surface) {
+
+        logger = _logger;
 
         // Select a physical device to use
         int graphicsCardFound = SelectGraphicsCard(_instance, _surface);        // Find a graphics card candidate
@@ -115,9 +111,9 @@ namespace Forge::Core {
             createInfo.ppEnabledLayerNames = nullptr;       // and do not pass any validation layers to enable
         }
 
-        if (vkCreateDevice(PGPU, &createInfo, nullptr, &LGPU) != VK_SUCCESS) {                          // If device creation fails
-            Logger("GC000", "Fatal Error: Failed to create a logical device -> graphics card.");        // then log the error
-            return 1;                                                                                   // and return corresponding error value
+        if (vkCreateDevice(PGPU, &createInfo, nullptr, &LGPU) != VK_SUCCESS) {                              // If device creation fails
+            logger->log("GC000", "Fatal Error: Failed to create a logical device -> graphics card.");       // then log the error
+            return 1;                                                                                       // and return corresponding error value
         }
 
         // Retrieves queue handles for queue family
@@ -133,9 +129,9 @@ namespace Forge::Core {
         uint32_t deviceCount = 0;                                           // Number of devices that support Vulkan
         vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);       // Get number of devices that support Vulkan
 
-        if (deviceCount == 0) {                                                             // If there are no devices that support Vulkan
-            Logger("GC001", "Fatal Error: Failed to find GPU that supports Vulkan.");       // then log the error
-            return 2;                                                                       // and return the error
+        if (deviceCount == 0) {                                                                 // If there are no devices that support Vulkan
+            logger->log("GC001", "Fatal Error: Failed to find GPU that supports Vulkan.");      // then log the error
+            return 2;                                                                           // and return the error
         }
 
         std::vector<VkPhysicalDevice> devices(deviceCount);                         // Initialize list of supported devices
@@ -150,9 +146,9 @@ namespace Forge::Core {
             }
         }
 
-        if (PGPU == VK_NULL_HANDLE) {                                                                           // If the GPU is null
-            Logger("GC002", "Fatal Error: Failed to find GPU that supports required Vulkan operation.");        // then log the error
-            return 3;                                                                                           // and return the error
+        if (PGPU == VK_NULL_HANDLE) {                                                                               // If the GPU is null
+            logger->log("GC002", "Fatal Error: Failed to find GPU that supports required Vulkan operation.");       // then log the error
+            return 3;                                                                                               // and return the error
         }
 
         return 0;

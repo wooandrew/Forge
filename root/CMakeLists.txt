@@ -10,19 +10,10 @@ add_library(libforge SHARED
 
     "include/forge.hpp"                 "src/forge.cpp"
     "include/engine.hpp"                "src/engine.cpp"
-    "include/core.hpp"             "src/core.cpp"
-    "include/graphicscard.hpp"     "src/graphicscard.cpp"   
-    "include/framework.hpp"         "src/framework.cpp"
-    "include/renderer.hpp" 		    "src/renderer.cpp"
-
-    #"include/archive/physical_devices.hpp"      "src/archive/physical_devices.cpp"
-    #"include/archive/logical_devices.hpp"       "src/archive/logical_devices.cpp"
-    #"include/archive/swapchain.hpp"             "src/archive/swapchain.cpp"
-    #"include/archive/pipeline.hpp"              "src/archive/pipeline.cpp"              
-    #"include/archive/command_buffers.hpp"       "src/archive/command_buffers.cpp"
-    #"include/archive/renderer.hpp"              "src/archive/renderer.cpp"
-    #"include/archive/vertex.hpp"                "src/archive/vertex.cpp" 
-    #"include/archive/vkcontainer.hpp"           "src/archive/vkcontainer.cpp"  
+    "include/core.hpp"                  "src/core.cpp"
+    "include/graphicscard.hpp"          "src/graphicscard.cpp"   
+    "include/framework.hpp"             "src/framework.cpp"
+    "include/renderer.hpp" 		        "src/renderer.cpp"
 )
 
 include(GenerateExportHeader)
@@ -33,4 +24,4 @@ target_include_directories(libforge PRIVATE Vulkan::Vulkan)
 target_link_libraries(libforge PRIVATE Vulkan::Vulkan)
 
 target_link_libraries(libforge PRIVATE glfw3.lib)
-target_link_libraries(libforge PRIVATE "libaswl-shared.lib")
+target_link_libraries(libforge PRIVATE "libaswl-shared-debug.lib")

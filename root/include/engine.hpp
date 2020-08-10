@@ -33,8 +33,9 @@ namespace Forge {    // Wrapper namespace
         struct Metadata {       // This struct contains the metadata for the engine/glfwWindow. The data inside should be set BEFORE the engine is initialized.
 
             // Engine metadata
-            bool autoinit = true;       // Automatically initialize engine components
-            bool debugmode = false;     // Enable debug mode
+            bool autoinit = true;               // Automatically initialize engine components
+            bool debugmode = false;             // Enable debug mode
+            bool loggingEnabled = true;         // Enable logging
 
             VkClearValue clearcolor = { 1.f, 1.f, 1.f, 0.f };       // Render surface clear color
             RendererType rendermode = RendererType::Render_2D;      // Engine render mode
@@ -69,6 +70,8 @@ namespace Forge {    // Wrapper namespace
         const Version version;      // Engine version
 
     private:
+
+        std::shared_ptr<Logger> logger;         // Instanced logger
 
         GLFWwindow* window;                             // GLFW Window ... it's just the window.
         std::shared_ptr<Core::EngineCore> core;         // TheForge Engine core

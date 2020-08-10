@@ -12,6 +12,7 @@ namespace Forge {
     Engine::Engine() : version({ 0, 1, 0 }) {
 
         window = nullptr;
+        logger = std::make_shared<Logger>();
         core = std::make_shared<Core::EngineCore>();
         framework = std::make_shared<App::Framework>();
     }
@@ -24,10 +25,15 @@ namespace Forge {
     // Initalize engine
     int Engine::init() {
 
+        if (metadata.loggingEnabled)                                // If logging is enabled
+            logger->__Logger = Logger::__Logger_::ENABLED;          // enable logger object
+        else                                                        // otherwise
+            logger->__Logger = Logger::__Logger_::DISABLED;         // disable logger object
+
         // Initialize GLFW
         if (!glfwInit()) {
-            Logger("E00G0", "Fatal Error: Failed to initialize GLFW -> !glfwInit().");      // Log the error if GLFW fails to initialize
-            return 1;                                                                       // then return the corresponding error value
+            logger->log("E00G0", "Fatal Error: Failed to initialize GLFW -> !glfwInit().");         // Log the error if GLFW fails to initialize
+            return 1;                                                                               // then return the corresponding error value
         }
 
         // Set the window hint using engine metadata. Defaulted to (GLFW_CLIENT_API, GLFW_NO_API) and (GLFW_RESIZABLE, GLFW_FALSE).                    
@@ -37,11 +43,11 @@ namespace Forge {
         // Create window using engine metadata
         window = glfwCreateWindow(metadata.windowDimensions.width, metadata.windowDimensions.height, metadata.windowTitle, nullptr, nullptr);
 
-        if (!window) {                                                                              // Check window creation status
-            Logger("E01G1", "Fatal Error: Failed to create window -> !glfwCreateWindow().");        // Log the error if window creation fails
-            glfwTerminate();                                                                        // terminate GLFW
+        if (!window) {                                                                                  // Check window creation status
+            logger->log("E01G1", "Fatal Error: Failed to create window -> !glfwCreateWindow().");       // Log the error if window creation fails
+            glfwTerminate();                                                                            // terminate GLFW
 
-            return 2;                                                                               // then return the corresponding error value
+            return 2;                                                                                   // then return the corresponding error value
         }
 
         // Create window context
@@ -50,31 +56,32 @@ namespace Forge {
         // If Engine components are set to initialize automatically
         if (metadata.autoinit) {
 
+            // Pass Engine metadata to Engine Core
             core->coredata.ForgeVersion = version;
             core->coredata.vkAppName = metadata.vkAppName;
             core->coredata.AppVersion = metadata.version;
 
             // Initialize the Engine's core
-            int ret = core->init(window);
+            int ret = core->init(logger, window);
             if (ret != FORGE_SUCCESS) {                                                                                             // If engine core initialization fails
                 std::string msg = "Fatal Error: Failed to initialize engine core with error [" + std::to_string(ret) + "].";        //
-                Logger("E02C0", msg);                                                                                               // then log the error
+                logger->log("E02C0", msg);                                                                                          // then log the error
                 return 3;                                                                                                           // and return the corresponding error value
             }
 
             // Initialize rendering framework
-            ret = framework->init(window, core);
+            ret = framework->init(logger, window, core);
             if (ret != FORGE_SUCCESS) {                                                                                                             // If rendering framework initialization fails
                 std::string msg = "Fatal Error: Failed to initialize engine rendering framework with error [" + std::to_string(ret) + "].";         // 
-                Logger("E03F0", msg);                                                                                                               // then log the error
+                logger->log("E03F0", msg);                                                                                                          // then log the error
                 return 4;                                                                                                                           // and return the corresponding error value
             }
 
             // Initialize renderer
-            ret = renderer.init(core, framework);
+            ret = renderer.init(logger, core, framework);
             if (ret != FORGE_SUCCESS) {                                                                                         // If renderer initialization fails
                 std::string msg = "Fatal Error: Failed to initialize renderer with error [" + std::to_string(ret) + "].";       //
-                Logger("E04R0", msg);                                                                                           // then log the error
+                logger->log("E04R0", msg);                                                                                      // then log the error
                 return 5;                                                                                                       // and return the corresponding error value
             }
         }
@@ -90,19 +97,22 @@ namespace Forge {
     // Draw frames
     int Engine::draw() {
 
-        int ret = renderer.draw();
+        int ret = renderer.draw();      // Draw
 
+        // If draw function returns suboptimal swapchain
         if (ret == 16 || ret == 19) {
 
+            // Reinitialize rendering framework
             int reinitFramework = framework->reinitialize(window);
             if (reinitFramework != FORGE_SUCCESS)
                 return 5;
 
+            // Reinitialize renderer
             int reinitRenderer = renderer.reinitialize();
             if (reinitRenderer != FORGE_SUCCESS)
                 return 6;
 
-            Logger("E05D0", "Renderer reinitialization succeeded.");
+            logger->log("E05D0", "Renderer reinitialization succeeded.");
         }
 
         return 0;
@@ -110,8 +120,8 @@ namespace Forge {
 
     // Set render surface clear color
     void Engine::SetClearColor() {
-        renderer.SetClearColor(metadata.clearcolor);
-        renderer.reinitialize();
+        renderer.SetClearColor(metadata.clearcolor);        // Set the canvas clearing color
+        renderer.reinitialize();                            // and reinitialize command buffers
     }
 
  
@@ -136,10 +146,9 @@ namespace Forge {
     // Cleanup Engine -> Vulkan/GLFW
     void Engine::cleanup() {
 
-        //container.cleanup();
-        renderer.cleanup();
-        framework->cleanup();
-        core->cleanup();
+        renderer.cleanup();             // Cleanup renderer
+        framework->cleanup();           // Cleanup rendering framework
+        core->cleanup();                // Cleanup engine core
 
         glfwDestroyWindow(window);      // Destroy window
         glfwTerminate();                // then terminate GLFW
