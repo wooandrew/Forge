@@ -1,2 +1,3 @@
 ADD: Vulkan ERR GUARD
 CONSTIFY getters
+REFACTOR buffer creation (vertex/index/uniform) -> Template buffer creation via decltype

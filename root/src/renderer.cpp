@@ -1,5 +1,8 @@
 // TheForge - src/app/renderer (c) Andrew Woo, 2020
 
+// Disable C6387 ---
+#pragma warning(disable : 6387)
+
 #include "renderer.hpp"
 
 namespace Forge::App {
@@ -34,13 +37,15 @@ namespace Forge::App {
         int acS = CreateAllocator();            // Create memory allocator
         int cpS = CreateCommandPool();          // Create command pool
         int vbS = CreateVertexBuffer();         // Create vertex buffer object
+        int ibS = CreateIndexBuffer();          // Create index buffer object
         int cbS = CreateCommandBuffers();       // Create command buffers
         int spS = CreateSemaphores();           // Create rendering semaphores
 
-        std::string msg = "Renderer initialization status is [" + std::to_string(acS) + "|" + std::to_string(cpS) + "|" + std::to_string(vbS) + "|" + std::to_string(cbS) + "|" + std::to_string(spS) + "].";
+        std::string msg = "Renderer initialization status is [" + std::to_string(acS) + "|" + std::to_string(cpS) + "|" + std::to_string(vbS) + "|" + 
+                                                                  std::to_string(ibS) + "|" + std::to_string(cbS) + "|" + std::to_string(spS) + "].";
         logger->log("R0000", msg);
 
-        return acS+ cpS + vbS + cbS + spS;
+        return acS+ cpS + vbS + ibS + cbS + spS;
     }
 
     int Renderer::reinitialize() {
@@ -124,7 +129,7 @@ namespace Forge::App {
         VkCommandPoolCreateInfo commandPoolInfo = {};                                       // commandPoolInfo specifies the parameters of the command pool
         commandPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;                 // Identify commandPoolInfo as structure type COMMAND_POOL_CREATE_INFO
         commandPoolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();       // Set queue family index
-        commandPoolInfo.flags = 0;                                                          // Set flags
+        commandPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;            // Set flags
 
         if (vkCreateCommandPool(core->GetLGPU(), &commandPoolInfo, nullptr, &CommandPool) != VK_SUCCESS) {      // If command pool creation fails
             logger->log("R07C0", "Fatal Error: Failed to create command pool.");                                // then log the error
@@ -158,22 +163,23 @@ namespace Forge::App {
         vbCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;               // Specify if buffer can be shared or not between queue families
 
         VmaAllocationCreateInfo vbAllocInfo = {};                   // vbAllocInfo specifies the parameters of the memory allocation object
-        vbAllocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;            // Specify memory usage
+        vbAllocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;              // Specify memory usage
         vbAllocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;       // vbAllocInfo flags
 
-        VkBuffer vbStaging = VK_NULL_HANDLE;            // Create staging buffer object
-        VmaAllocation sVbAlloc = VK_NULL_HANDLE;        // Create staging buffer allocation object
-        VmaAllocationInfo sVbAllocInfo = {};            // Create staging buffer allocation info
+        VkBuffer vbStagingBuffer = VK_NULL_HANDLE;      // Staging buffer object
+        VmaAllocation sVbAlloc = VK_NULL_HANDLE;        // Staging buffer allocation object
+        VmaAllocationInfo sVbAllocInfo = {};            // Staging buffer allocation info
+        sVbAllocInfo.pMappedData = 0;
 
-        if (vmaCreateBuffer(allocator, &vbCreateInfo, &vbAllocInfo, &vbStaging, &sVbAlloc, &sVbAllocInfo) != VK_SUCCESS) {      // If staging buffer creation fails
-            logger->log("R09V0", "Fatal Error: Staging Buffer creation failed.");                                               // then log the error
-            return 10;                                                                                                          // and return the corresponding error value
+        if (vmaCreateBuffer(allocator, &vbCreateInfo, &vbAllocInfo, &vbStagingBuffer, &sVbAlloc, &sVbAllocInfo) != VK_SUCCESS) {        // If staging buffer creation fails
+            logger->log("R09V0", "Fatal Error: Vertex Staging Buffer creation failed.");                                                // then log the error
+            return 10;                                                                                                                  // and return the corresponding error value
         }
 
         std::memcpy(sVbAllocInfo.pMappedData, vertices, vbSize);        // Copy vertices to mapped data in staging allocation info
 
         vbCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;          // Specify buffer usage
-        vbAllocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;                                                    // Specify memory usage
+        vbAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;                                                      // Specify memory usage
         vbAllocInfo.flags = 0;                                                                              // vbAllocInfo has no flags
         
         if (vmaCreateBuffer(allocator, &vbCreateInfo, &vbAllocInfo, &VertexBuffer, &vbAllocation, nullptr) != VK_SUCCESS) {     // If vertex buffer creation fails
@@ -181,10 +187,10 @@ namespace Forge::App {
             return 11;                                                                                                          // and return the corresponding error value
         }
 
-        int rSSTC = StartSingleTimeCommand();                       // Start temporary command buffer
-        if (rSSTC != 0) {                                           // If temporary command buffer failed to start properly
-            vmaDestroyBuffer(allocator, vbStaging, sVbAlloc);       // then destroy temporary staging buffer vbStaging
-            return rSSTC;                                           // and return failure
+        int rSSTC = StartSingleTimeCommand();                               // Start temporary command buffer
+        if (rSSTC != 0) {                                                   // If temporary command buffer failed to start properly
+            vmaDestroyBuffer(allocator, vbStagingBuffer, sVbAlloc);         // then destroy temporary staging buffer vbStagingBuffer
+            return rSSTC;                                                   // and return failure
         }
 
         VkBufferCopy vbCopyRegion = {};             // vbCopyRegion specifies the parameters for copying staging buffer to vertex buffer
@@ -192,17 +198,81 @@ namespace Forge::App {
         vbCopyRegion.dstOffset = 0;                 // Set destination offset
         vbCopyRegion.size = vbCreateInfo.size;      // Specify number of bytes to copy
 
-        // Copy vbStaging to VertexBuffer
-        vkCmdCopyBuffer(TempCommandBuffer, vbStaging, VertexBuffer, 1, &vbCopyRegion);
+        // Copy vbStagingBuffer to VertexBuffer
+        vkCmdCopyBuffer(TempCommandBuffer, vbStagingBuffer, VertexBuffer, 1, &vbCopyRegion);
 
-        int rESTC = EndSingleTimeCommand();                         // Stop temporary command buffer
-        if (rESTC != 0) {                                           // If temporary command buffer failed to end properly
-            vmaDestroyBuffer(allocator, vbStaging, sVbAlloc);       // then destroy temporary staging buffer vbStaging
-            return rESTC;                                           // and return failure.
+        int rESTC = EndSingleTimeCommand();                                 // Stop temporary command buffer
+        if (rESTC != 0) {                                                   // If temporary command buffer failed to end properly
+            vmaDestroyBuffer(allocator, vbStagingBuffer, sVbAlloc);         // then destroy temporary staging buffer vbStagingBuffer
+            return rESTC;                                                   // and return failure.
         }
 
-        // Destroy temporary staging buffer vbStaging
-        vmaDestroyBuffer(allocator, vbStaging, sVbAlloc);
+        // Destroy temporary staging buffer vbStagingBuffer
+        vmaDestroyBuffer(allocator, vbStagingBuffer, sVbAlloc);
+
+        return 0;
+    }
+
+    // Create IndexBuffer on call
+    int Renderer::CreateIndexBuffer() {
+
+
+        // Index buffer size
+        VkDeviceSize ibSize = sizeof(uint16_t) * _countof(indices);
+
+        VkBufferCreateInfo ibCreateInfo = {};                           // ibCreateInfo specifies the parameters of the buffer object
+        ibCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;      // Specify ibCreateInfo as structure type BUFFER_CREATE_INFO
+        ibCreateInfo.size = ibSize;                                     // Size of buffer in bytes
+        ibCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;          // Specify buffer usage
+        ibCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;           // Specify if buffer can be shared or not between queue families
+
+        VmaAllocationCreateInfo ibAllocInfo = {};                   // ibAllocInfo specifies the parameters of the memory allocation object
+        ibAllocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;              // Specify memory usage
+        ibAllocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;       // vbAllocInfo flags
+
+        VkBuffer ibStagingBuffer = VK_NULL_HANDLE;          // Staging buffer object
+        VmaAllocation sIbAlloc = VK_NULL_HANDLE;            // Staging buffer allocation object
+        VmaAllocationInfo sIbAllocInfo = {};                // Staging buffer allocation info
+        sIbAllocInfo.pMappedData = 0;
+        
+        if (vmaCreateBuffer(allocator, &ibCreateInfo, &ibAllocInfo, &ibStagingBuffer, &sIbAlloc, &sIbAllocInfo) != VK_SUCCESS) {        // If staging buffer creation fails
+            logger->log("R11I0", "Fatal Error: Index Staging Buffer creation failed.");                                                 // then log the error
+            return 12;                                                                                                                  // and return the corresponding error value
+        }
+
+        memcpy(sIbAllocInfo.pMappedData, indices, ibSize);      // Copy indices to mapped data in staging allocation info
+
+        ibCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;       // Specify buffer usage
+        ibAllocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;                                                  // Specify memory usage
+        ibAllocInfo.flags = 0;                                                                          // ibAllocInfo has no flags
+
+        if (vmaCreateBuffer(allocator, &ibCreateInfo, &ibAllocInfo, &IndexBuffer, &ibAllocation, nullptr) != VK_SUCCESS) {      // If staging buffer creation fails
+            logger->log("R12I1", "Fatal Error: Index Buffer creation failed.");                                                 // then log the error
+            return 13;                                                                                                          // and return the corresponding error value
+        }
+
+        int rSSTC = StartSingleTimeCommand();                               // Start temporary command buffer
+        if (rSSTC != 0) {                                                   // If temporary command buffer failed to start properly
+            vmaDestroyBuffer(allocator, ibStagingBuffer, sIbAlloc);         // then destroy temporary staging buffer ibStagingBuffer
+            return rSSTC;                                                   // and return failure
+        }
+
+        VkBufferCopy ibCopyRegion = {};             // vbCopyRegion specifies the parameters for copying staging buffer to index buffer
+        ibCopyRegion.srcOffset = 0;                 // Set source offset
+        ibCopyRegion.dstOffset = 0;                 // Set destination offset
+        ibCopyRegion.size = ibCreateInfo.size;      // Specify number of bytes to copy
+
+        // Copy ibStagingBuffer to IndexBuffer
+        vkCmdCopyBuffer(TempCommandBuffer, ibStagingBuffer, IndexBuffer, 1, &ibCopyRegion);
+
+        int rESTC = EndSingleTimeCommand();                                 // Stop temporary command buffer
+        if (rESTC != 0) {                                                   // If temporary command buffer failed to end properly
+            vmaDestroyBuffer(allocator, ibStagingBuffer, sIbAlloc);         // then destroy temporary staging buffer ibStagingBuffer
+            return rESTC;                                                   // and return failure.
+        }
+
+        // Destroy temporary staging buffer ibStagingBuffer
+        vmaDestroyBuffer(allocator, ibStagingBuffer, sIbAlloc);
 
         return 0;
     }
@@ -219,8 +289,8 @@ namespace Forge::App {
         allocInfo.commandBufferCount = static_cast<uint32_t>(cmdBuffers.size());        // Number of command buffers
 
         if (vkAllocateCommandBuffers(core->GetLGPU(), &allocInfo, cmdBuffers.data()) != VK_SUCCESS) {       // If command buffer allocation fails
-            logger->log("R11C2", "Fatal Error: Failed to allocate command buffers.");                       // then log the error
-            return 12;                                                                                      // and return the corresponding value
+            logger->log("R13C2", "Fatal Error: Failed to allocate command buffers.");                       // then log the error
+            return 14;                                                                                      // and return the corresponding value
         }
 
         // Iterate through every command buffer
@@ -243,20 +313,21 @@ namespace Forge::App {
 
             if (vkBeginCommandBuffer(cmdBuffers[i], &beginInfo) != VK_SUCCESS) {                                                // If beginning command buffer fails
                 std::string msg = "Fatal Error: Failed to begin command buffer at index [" + std::to_string(i) + "].";          // 
-                logger->log("R12C3", msg);                                                                                      // then log the error
-                return 13;                                                                                                      // and return the corresponding value
+                logger->log("R14C3", msg);                                                                                      // then log the error
+                return 15;                                                                                                      // and return the corresponding value
             }
 
             vkCmdBeginRenderPass(cmdBuffers[i], &renderpassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);              // Start a new render pass
             vkCmdBindPipeline(cmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, framework->GetPipeline());        // Bind pipeline object to command buffer
             vkCmdBindVertexBuffers(cmdBuffers[i], 0, 1, buffers, offsets);                                      // Bind vertex buffer
-            vkCmdDraw(cmdBuffers[i], static_cast<uint32_t>(_countof(vertices)), 1, 0, 0);                       // Draw primitive
+            vkCmdBindIndexBuffer(cmdBuffers[i], IndexBuffer, 0, VK_INDEX_TYPE_UINT16);                          // Bind index buffer
+            vkCmdDrawIndexed(cmdBuffers[i], static_cast<uint32_t>(_countof(indices)), 1, 0, 0, 0);              // Draw primitive
             vkCmdEndRenderPass(cmdBuffers[i]);                                                                  // End render pass
 
             if (vkEndCommandBuffer(cmdBuffers[i]) != VK_SUCCESS) {                                                          // If ending command buffer fails
                 std::string msg = "Fatal Error: Failed to end command buffer at index [" + std::to_string(i) + "].";        // 
-                logger->log("R13C4", msg);                                                                                  // then log the error
-                return 14;                                                                                                  // and return the corresponding value
+                logger->log("R15C4", msg);                                                                                  // then log the error
+                return 16;                                                                                                  // and return the corresponding value
             }
         }
 
@@ -288,8 +359,8 @@ namespace Forge::App {
                     vkCreateFence(core->GetLGPU(), &fenceCreateInfo, nullptr, &InFlightFences[i]) != VK_SUCCESS) {                          // or fence creation fails
 
                     std::string msg = "Fatal Error: Failed to create semaphore/fence object at index [" + std::to_string(i) + "].";         //
-                    logger->log("R14S0", msg);                                                                                              // then log the error
-                    return 15;                                                                                                              // and return the corresponding error value
+                    logger->log("R16S0", msg);                                                                                              // then log the error
+                    return 17;                                                                                                              // and return the corresponding error value
                 }
             }
         }
@@ -314,15 +385,15 @@ namespace Forge::App {
         VkResult acquireResult = vkAcquireNextImageKHR(core->GetLGPU(), framework->GetSwapchain(), UINT64_MAX, ImageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
 
         if (acquireResult == VK_ERROR_OUT_OF_DATE_KHR) {                // If the swapchain goes out of date
-            logger->log("R15D0", "Error: Swapchain out of date.");      // then log the error
-            return 16;                                                  // and return the corresponding error value
+            logger->log("R17D0", "Error: Swapchain out of date.");      // then log the error
+            return 18;                                                  // and return the corresponding error value
         }
         else if (acquireResult == VK_SUBOPTIMAL_KHR)        // If the swapchain becomes suboptimal
             swapchainSubOptimal = true;                     // flag swapchain to be reinitialized
 
         else if (acquireResult != VK_SUCCESS) {                                                     // If acquiring an image to render from the swapchain fails
-            logger->log("R16D1", "Error: Failed to acquire an image from the swapchain.");          // then log the error
-            return 17;                                                                              // and return the corresponding error value
+            logger->log("R18D1", "Error: Failed to acquire an image from the swapchain.");          // then log the error
+            return 19;                                                                              // and return the corresponding error value
         }
 
         if (InFlightImages[imageIndex] != VK_NULL_HANDLE)                                                   // If previous frame is using the fence
@@ -349,8 +420,8 @@ namespace Forge::App {
         vkResetFences(core->GetLGPU(), 1, &InFlightFences[currentFrame]);      // Reset fence
 
         if (vkQueueSubmit(core->GetGraphicsQueue(), 1, &submitInfo, InFlightFences[currentFrame]) != VK_SUCCESS) {      // If semaphore or command buffer sequence submission to queue fails
-            logger->log("R17D2", "Error: Failed to submit semaphore/command buffer sequence to graphics queue.");       // then log the error
-            return 18;                                                                                                  // and stop the rendering process
+            logger->log("R19D2", "Error: Failed to submit semaphore/command buffer sequence to graphics queue.");       // then log the error
+            return 20;                                                                                                  // and stop the rendering process
         }
 
         VkSwapchainKHR swapchains[] = { framework->GetSwapchain() };        // List of swapchains
@@ -368,16 +439,16 @@ namespace Forge::App {
         VkResult queuePresentResult = vkQueuePresentKHR(core->GetPresentQueue(), &presentInfo);
 
         if (queuePresentResult == VK_ERROR_OUT_OF_DATE_KHR) {       // If the swapchain goes out of date
-            logger->log("R15D0", "Error: Swapchain out of date.");       // then log the error
-            return 16;                                              // and return the corresponding error value
+            logger->log("R17D0", "Error: Swapchain out of date.");       // then log the error
+            return 18;                                              // and return the corresponding error value
         }
         else if (queuePresentResult == VK_SUBOPTIMAL_KHR || swapchainSubOptimal) {                      // If the swapchain becomes suboptimal
-            logger->log("R19D3", "Error: Swapcahin is suboptimal and must be reinitialized.");          // then log the error
-            return 19;                                                                                  // and return the corresponding error value
+            logger->log("R20D3", "Error: Swapcahin is suboptimal and must be reinitialized.");          // then log the error
+            return 21;                                                                                  // and return the corresponding error value
         }
         else if (queuePresentResult != VK_SUCCESS) {                                                        // If acquiring an image to render from the swapchain fails
-            logger->log("R20D4", "Error: Failed to queue an image from the swapchain to render.");          // then log the error
-            return 20;                                                                                      // and return the corresponding error value
+            logger->log("R21D4", "Error: Failed to queue an image from the swapchain to render.");          // then log the error
+            return 22;                                                                                      // and return the corresponding error value
         }
 
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;       // Track which frame is being rendered
@@ -398,7 +469,9 @@ namespace Forge::App {
 
         vkDestroyCommandPool(core->GetLGPU(), CommandPool, nullptr);
 
+        vmaDestroyBuffer(allocator, IndexBuffer, ibAllocation);
         vmaDestroyBuffer(allocator, VertexBuffer, vbAllocation);
+
         vmaDestroyAllocator(allocator);
     }
 }

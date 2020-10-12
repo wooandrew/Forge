@@ -9,8 +9,9 @@
 #include <string>
 
 #define __FORGE_DISABLE_LOGGING_AT_COMPILE_TIME
-#include <forge.hpp>
+
 #include <engine.hpp>
+//#include <forge.hpp>
 
 int main() {
 
@@ -50,9 +51,9 @@ int main() {
         if (e.draw() != 0)
             break;
     
-        // num++;
-        // e.metadata.clearcolor = { std::fmod(num, 255.f) / 255.f, std::fmod(num * 2, 255.f) / 255.f, std::fmod(num * 3, 255.f) / 255.f, 0.f };
-        // e.SetClearColor();
+        num++;
+        e.metadata.clearcolor = { std::fmod(num * 10, 255.f) / 255.f, std::fmod(num * 2, 255.f) / 255.f, std::fmod(num * 3, 255.f) / 255.f, 0.f };
+        e.SetClearColor();
     }
 
     return 0;

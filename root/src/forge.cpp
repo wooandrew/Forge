@@ -6,6 +6,7 @@
 #include "forge.hpp"
 
 namespace Forge {
+
     // Create a vertex binding description
     VkVertexInputBindingDescription Vertex::GetBindingDescription() {
 

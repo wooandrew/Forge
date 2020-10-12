@@ -67,23 +67,27 @@ App Renderer: Command Pool/Buffer
 9   "R08C1", "Fatal Error: Failed to create temporary command buffer."
 
 App Renderer: Vertex Buffer
-10  "R09V0", "Fatal Error: Staging Buffer creation failed."
+10  "R09V0", "Fatal Error: Vertex Staging Buffer creation failed."
 11  "R10V1", "Fatal Error: Vertex Buffer creation failed."
 
+App Renderer: Index Buffer
+12  "R11I0", "Fatal Error: Index Staging Buffer creation failed."
+13  "R12I1", "Fatal Error: Index Buffer creation failed."
+
 App Renderer: Command Pool/Buffer /2
-12  "R11C2", "Fatal Error: Failed to allocate command buffers."
-13  "R12C3", "Fatal Error: Failed to begin command buffer at index [" + index + "]."
-14  "R13C4", "Fatal Error: Failed to end command buffer at index [" + index + "]."
+14  "R13C2", "Fatal Error: Failed to allocate command buffers."
+15  "R14C3", "Fatal Error: Failed to begin command buffer at index [" + index + "]."
+16  "R15C4", "Fatal Error: Failed to end command buffer at index [" + index + "]."
 
 App Renderer: Semaphores/Fences
-15  "R14S0", "Fatal Error: Failed to create semaphore/fence object at index [" + index + "]."
+17  "R16S0", "Fatal Error: Failed to create semaphore/fence object at index [" + index + "]."
 
 App Renderer: Draw
-16  "R15D0", "Error: Swapchain out of date."
-17  "R16D1", "Error: Failed to acquire an image from the swapchain."
-18  "R17D2", "Error: Failed to submit semaphore/command buffer sequence to graphics queue."
-19  "R19D3", "Error: Swapcahin is suboptimal and must be reinitialized."
-20  "R20D4", "Error: Failed to queue an image from the swapchain to render."
+18  "R17D0", "Error: Swapchain out of date."
+19  "R18D1", "Error: Failed to acquire an image from the swapchain."
+20  "R19D2", "Error: Failed to submit semaphore/command buffer sequence to graphics queue."
+21  "R20D3", "Error: Swapcahin is suboptimal and must be reinitialized."
+22  "R21D4", "Error: Failed to queue an image from the swapchain to render."
 
 
 Miscellaneous

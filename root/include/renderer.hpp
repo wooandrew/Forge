@@ -55,6 +55,7 @@ namespace Forge::App {
         int CreateAllocator();              // Create allocator
         int CreateCommandPool();            // Create CommandPool
         int CreateVertexBuffer();           // Create VertexBuffer
+        int CreateIndexBuffer();            // Create IndexBuffer
         int CreateCommandBuffers();         // Create command buffers
         int CreateSemaphores();             // Create rendering semaphores and fences
 
@@ -65,8 +66,11 @@ namespace Forge::App {
         VkClearValue clearCanvasColor;      // Canvas clearing color
         VmaAllocator allocator;             // VulkanMemeoryAllocator
 
-        VkBuffer VertexBuffer;              // Handle to buffer object
+        VkBuffer VertexBuffer;              // Handle to vertex buffer object
         VmaAllocation vbAllocation;         // Vertex Buffer Memory allocation object
+
+        VkBuffer IndexBuffer;               // Handle to index buffer object
+        VmaAllocation ibAllocation;         // Index Buffer Memory allocation object
 
         VkCommandPool CommandPool;                      // Handle to VkCommandPool object
         std::vector<VkCommandBuffer> cmdBuffers;        // List of handles to command buffers
