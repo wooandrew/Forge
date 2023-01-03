@@ -56,8 +56,11 @@ namespace Forge::App {
         int CreateCommandPool();            // Create CommandPool
         int CreateVertexBuffer();           // Create VertexBuffer
         int CreateIndexBuffer();            // Create IndexBuffer
+        int CreateUniformBuffers();         // Create uniform buffers
         int CreateCommandBuffers();         // Create command buffers
         int CreateSemaphores();             // Create rendering semaphores and fences
+
+        void UpdateUBO(uint32_t _imageIndex);       // Update uniform buffer
 
         std::shared_ptr<Logger> logger;                         // Instanced logger
         std::shared_ptr<Forge::Core::EngineCore> core;          // Engine core
@@ -72,14 +75,17 @@ namespace Forge::App {
         VkBuffer IndexBuffer;               // Handle to index buffer object
         VmaAllocation ibAllocation;         // Index Buffer Memory allocation object
 
+        std::vector<VkBuffer> UniformBuffers;           // Vector contains uniform buffers contiguously
+        std::vector<VmaAllocation> ubAllocations;       // Vector of uniform buffer memory allocations
+
         VkCommandPool CommandPool;                      // Handle to VkCommandPool object
         std::vector<VkCommandBuffer> cmdBuffers;        // List of handles to command buffers
         VkCommandBuffer TempCommandBuffer;              // Command buffer for single time uses
 
-        std::vector<VkSemaphore> ImageAvailableSemaphores;          // List of handles to semaphore signal -> image aquired
-        std::vector<VkSemaphore> RenderFinishedSemaphores;          // List of handles to semaphore signal -> render finished
-        std::vector<VkFence> InFlightFences;                        // List of handles to fence object
-        std::vector<VkFence> InFlightImages;                        // List of fences for each image in swapchain
+        std::vector<VkSemaphore> ImageAvailableSemaphores;          // Vector of handles to semaphore signal -> image acquired
+        std::vector<VkSemaphore> RenderFinishedSemaphores;          // Vector of handles to semaphore signal -> render finished
+        std::vector<VkFence> InFlightFences;                        // Vector of handles to fence object
+        std::vector<VkFence> InFlightImages;                        // Vector of fences for each image in swapchain
     };
 }
 

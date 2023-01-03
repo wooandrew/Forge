@@ -13,7 +13,7 @@ add_library(libforge SHARED
     "include/core.hpp"                  "src/core.cpp"
     "include/graphicscard.hpp"          "src/graphicscard.cpp"   
     "include/framework.hpp"             "src/framework.cpp"
-    "include/renderer.hpp" 		        "src/renderer.cpp"
+    "include/renderer.hpp" 		"src/renderer.cpp"
 )
 
 include(GenerateExportHeader)

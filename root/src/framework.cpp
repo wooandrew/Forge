@@ -32,12 +32,14 @@ namespace Forge::App {
         int rSC = initSwapchain(_window);       // Initialize the swapchain object
         int rRP = initRenderPass();             // Initialize the RenderPass object
         int rFB = initFramebuffers();           // Initialize framebuffers
+        int rDS = initDescriptorSet();          // Initialize descriptor set
         int rPL = initPipeline();               // Initialize the pipeline object
 
-        std::string msg = "Framework initialization status is [" + std::to_string(rSC) + "|" + std::to_string(rRP) + "|" + std::to_string(rFB) + "|" + std::to_string(rPL) + "].";
+        std::string msg = "Framework initialization status is [" + std::to_string(rSC) + "|" + std::to_string(rRP) + "|" + std::to_string(rFB) + "|" +
+            std::to_string(rDS) + "|" + std::to_string(rPL) + "].";
         logger->log("F0000", msg);
 
-        return rSC + rRP + rFB + rPL;       // Return the sum of results
+        return rSC + rRP + rFB + rDS + rPL;       // Return the sum of results
     }
 
     int Framework::reinitialize(GLFWwindow* _window) {
@@ -252,6 +254,30 @@ namespace Forge::App {
         return 0;
     }
 
+    int Framework::initDescriptorSet() {
+
+        // Create Descripter Set Layout
+        VkDescriptorSetLayoutBinding uboLayoutBinding = {};                         // uboLayoutBinding specifies the uniform buffer descripter set binding
+        uboLayoutBinding.binding = 0;                                               // Specify binding number corresponding to the texture binding in shaders
+        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;        // Specify descriptor type as uniform buffer binding
+        uboLayoutBinding.descriptorCount = 1;                                       // Specify the number descriptors contained in the binding
+
+        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;                   // Bitmask specifies which shader stages can access a resource for this binding
+        uboLayoutBinding.pImmutableSamplers = nullptr;                              // Pointer to immutable ssamplers. This parameter is optional. (an immutable sampler must >NOT< be changed)
+
+        VkDescriptorSetLayoutCreateInfo descriptorSetCreateInfo = {};                               // descriptorSetCreateInfo specifies the parameters of the descriptor set
+        descriptorSetCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;        // Identify descriptorSetCreateInfo as a structure type DESCRIPTOR_SET_LAYOUT_CREATE_INFO
+        descriptorSetCreateInfo.bindingCount = 1;                                                   // Set number of elements in pBindings
+        descriptorSetCreateInfo.pBindings = &uboLayoutBinding;                                      // Pointer to uboLayoutBinding
+
+        if (vkCreateDescriptorSetLayout(core->GetLGPU(), &descriptorSetCreateInfo, nullptr, &DescriptorSetLayout) != VK_SUCCESS) {      // If descriptor set layout creation fails
+            logger->log("F06DS", "Fatal Error: Failed to create descriptor set layout.");                                               // then log the error
+            return 7;                                                                                                                   // and return the corresponding error
+        }
+
+        return 0;
+    }
+
     int Framework::initPipeline() {
 
         // Load Vertex Shader
@@ -266,8 +292,8 @@ namespace Forge::App {
 
         VkShaderModule vertShaderModule = VK_NULL_HANDLE;                                               // Vertex Shader Module
         if (vkCreateShaderModule(core->GetLGPU(), &vertCreateInfo, nullptr, &vertShaderModule)) {       // If vertex shader module creation fails
-            logger->log("F06P0", "Fatal Error: Failed to create vertex shader module.");                // then log the error
-            return 7;                                                                                   // and return the corresponding error value
+            logger->log("F07P0", "Fatal Error: Failed to create vertex shader module.");                // then log the error
+            return 8;                                                                                   // and return the corresponding error value
         }
 
         // Create Vertex Shader Pipeline
@@ -289,8 +315,8 @@ namespace Forge::App {
 
         VkShaderModule fragShaderModule = VK_NULL_HANDLE;                                               // Fragment Shader Module
         if (vkCreateShaderModule(core->GetLGPU(), &fragCreateInfo, nullptr, &fragShaderModule)) {       // If fragment shader module creation fails
-            logger->log("F07P1", "Fatal Error: Failed to create fragment shader module.");              // then log the error
-            return 8;                                                                                   // and return the corresponding error value
+            logger->log("F08P1", "Fatal Error: Failed to create fragment shader module.");              // then log the error
+            return 9;                                                                                   // and return the corresponding error value
         }
 
         // Create Fragment Shader Pipeline
@@ -362,9 +388,9 @@ namespace Forge::App {
 
         VkPipelineColorBlendAttachmentState colorBlendAttachment = {};                          // colorBlendAttachment specifies the pipeline color blend attachment state
         colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |                        // Set which color component is enabled for writing (R) RED
-                                              VK_COLOR_COMPONENT_G_BIT |                        // Set which color component is enabled for writing (G) GREEN
-                                              VK_COLOR_COMPONENT_B_BIT |                        // Set which color component is enabled for writing (B) BLUE
-                                              VK_COLOR_COMPONENT_A_BIT;                         // Set which color component is enabled for writing (A) ALPHA
+            VK_COLOR_COMPONENT_G_BIT |                        // Set which color component is enabled for writing (G) GREEN
+            VK_COLOR_COMPONENT_B_BIT |                        // Set which color component is enabled for writing (B) BLUE
+            VK_COLOR_COMPONENT_A_BIT;                         // Set which color component is enabled for writing (A) ALPHA
         colorBlendAttachment.blendEnable = VK_TRUE;                                             // Set whether or not color blending is enabled
         colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;                   // Set color blending source factor
         colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;         // Set color blending destination factor
@@ -393,10 +419,12 @@ namespace Forge::App {
 
         VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};                             // pipelineLayoutInfo specifies the parameters of the pipeline layout object
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;       // Identify pipelineLayoutInfo as structure type PIPELINE_LAYOUT_CREATE_INFO
+        pipelineLayoutInfo.setLayoutCount = 1;                                          // Set number of descriptor layouts
+        pipelineLayoutInfo.pSetLayouts = &DescriptorSetLayout;                          // Pointer to descriptor set layouts
 
         if (vkCreatePipelineLayout(core->GetLGPU(), &pipelineLayoutInfo, nullptr, &PipelineLayout) != VK_SUCCESS) {         // If pipeline layout creation fails
-            logger->log("F08P2", "Fatal Error: Failed to create pipeline layout.");                                         // then log the error
-            return 9;                                                                                                       // and return the corresponding error value
+            logger->log("F09P2", "Fatal Error: Failed to create pipeline layout.");                                         // then log the error
+            return 10;                                                                                                      // and return the corresponding error value
         }
 
         VkGraphicsPipelineCreateInfo pipelineInfo = {};                             // pipelineInfo specifies the parameters of the pipeline object
@@ -418,8 +446,8 @@ namespace Forge::App {
         pipelineInfo.basePipelineIndex = -1;                                        // Optional
 
         if (vkCreateGraphicsPipelines(core->GetLGPU(), VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {       // If graphics pipeline creation fails
-            logger->log("F09P3", "Fatal Error: Failed to create graphics pipeline.");                                               // then log the error
-            return 10;                                                                                                              // and return the corresponding error
+            logger->log("F10P3", "Fatal Error: Failed to create graphics pipeline.");                                               // then log the error
+            return 11;                                                                                                              // and return the corresponding error
         }
 
         vkDestroyShaderModule(core->GetLGPU(), vertShaderModule, nullptr);          // Destroy shader modules
@@ -439,8 +467,8 @@ namespace Forge::App {
 
             if (!shader.is_open()) {                                                                // If opening shader file fails
                 std::string msg = "Fatal Error: Failed to load shader from [" + path + "].";        //
-                logger->log("F10P4", msg);                                                          // then log the error
-                return 11;                                                                          // and return the corresponding error
+                logger->log("F11P4", msg);                                                          // then log the error
+                return 12;                                                                          // and return the corresponding error
             }
 
             size_t fileSize = (size_t)shader.tellg();       // Get input position associated with streambuf object
@@ -480,6 +508,10 @@ namespace Forge::App {
     VkPipeline& Framework::GetPipeline() {
         return pipeline;
     }
+    // Returns DescriptorSetLayout object
+    VkDescriptorSetLayout& Framework::GetDescriptorSetLayout() {
+        return DescriptorSetLayout;
+    }
 
     VkExtent2D& Framework::GetExtent() {                // Returns swapchain extent on request
         return extent;
@@ -497,6 +529,9 @@ namespace Forge::App {
         // Cleanup Pipeline
         vkDestroyPipeline(core->GetLGPU(), pipeline, nullptr);
         vkDestroyPipelineLayout(core->GetLGPU(), PipelineLayout, nullptr);
+
+        // Cleanup DescriptorSetLayouts
+        vkDestroyDescriptorSetLayout(core->GetLGPU(), DescriptorSetLayout, nullptr);
 
         // Cleanup RenderPass
         vkDestroyRenderPass(core->GetLGPU(), RenderPass, nullptr);

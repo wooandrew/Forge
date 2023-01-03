@@ -23,8 +23,9 @@ Engine Core: Graphics Card
 2   "GC001", "Fatal Error: Failed to find GPU that supports Vulkan."
 3   "GC002", "Fatal Error: Failed to find GPU that supports required Vulkan operation."
 
+
 App Framework
-X   "F0000", "Framework initialization status is [" + rSC + "|" + rRP + "|" + rFB + "|" + rPL + "]."
+X   "F0000", "Framework initialization status is [" + rSC + "|" + rRP + "|" + rFB + "|" + rDS + "|" + rPL + "]."
 
 App Framework: Reinitialize
 2   "F0001", "Fatal Error: Failed to reinitialize framework with error [" + status + "]."
@@ -39,16 +40,19 @@ App Framework: Renderpass
 App Framework: Framebuffers
 6   "F05FB", "Fatal Error: Failed to create framebuffer at index [" + i + "]."
 
+App Framework: Descriptor Set Layout
+7   "F06DS", "Fatal Error: Failed to create descriptor set layout."
+
 App Framework: Pipeline
-7   "F06P0", "Fatal Error: Failed to create vertex shader module."
-8   "F07P1", "Fatal Error: Failed to create fragment shader module."
-9   "F08P2", "Fatal Error: Failed to create pipeline layout."
-10  "F09P3", "Fatal Error: Failed to create graphics pipeline."
-11  "F10P4", "Fatal Error: Failed to load shader from [" + path + "]."
+8   "F07P0", "Fatal Error: Failed to create vertex shader module."
+9   "F08P1", "Fatal Error: Failed to create fragment shader module."
+10  "F09P2", "Fatal Error: Failed to create pipeline layout."
+11  "F10P3", "Fatal Error: Failed to create graphics pipeline."
+12  "F11P4", "Fatal Error: Failed to load shader from [" + path + "]."
 
 
 App Renderer
-X   "R0000", "Renderer initialization status is [" + acS + "|" + cpS + "|" + vbS + "|" + cbS + "|" + spS + "]."
+X   "R0000", "Renderer initialization status is [" + acS + "|" + cpS + "|" + vbS + "|" + ibS + "|" + ubS + "|" + cbS + "|" + spS + "]."
 
 App Renderer: Reinitialize
 2   "R1RI0", "Fatal Error: Failed to reinitialize command buffers."
@@ -62,7 +66,7 @@ App Renderer: Temporary Command Buffer
 App Renderer: Allocator
 7   "R06V0", "Fatal Error: Failed to create vertex buffer."
 
-App Renderer: Command Pool/Buffer
+App Renderer: Command Pool/Buffer /1
 8   "R07C0", "Fatal Error: Failed to create command pool."
 9   "R08C1", "Fatal Error: Failed to create temporary command buffer."
 
@@ -73,6 +77,9 @@ App Renderer: Vertex Buffer
 App Renderer: Index Buffer
 12  "R11I0", "Fatal Error: Index Staging Buffer creation failed."
 13  "R12I1", "Fatal Error: Index Buffer creation failed."
+
+App Renderer: Uniform Buffers
+14  "R13U0", "Fatal Error: Failed to create staging uniform buffer object at index [" + index + "]."
 
 App Renderer: Command Pool/Buffer /2
 14  "R13C2", "Fatal Error: Failed to allocate command buffers."

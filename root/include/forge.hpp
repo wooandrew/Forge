@@ -86,6 +86,12 @@ namespace Forge {
     VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);         // Choose surface present mode
     VkExtent2D ChooseSwapExtent(GLFWwindow* window, const VkSurfaceCapabilitiesKHR& capabilities);              // Choose swap extent -> surface resolution
 
+    struct UniformBuffer {
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 proj;
+    };
+
     // TEMP
     enum class RendererType {       // Renderer type
         Render_2D,

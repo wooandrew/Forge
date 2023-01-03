@@ -1,9 +1,15 @@
 // TheForge - src/app/renderer (c) Andrew Woo, 2020
 
 // Disable C6387 ---
+#pragma warning(disable : 6385)
 #pragma warning(disable : 6387)
 
 #include "renderer.hpp"
+
+#include <chrono>
+
+#include <GLM/glm.hpp>
+#include <GLM/gtc/matrix_transform.hpp>
 
 namespace Forge::App {
 
@@ -38,14 +44,15 @@ namespace Forge::App {
         int cpS = CreateCommandPool();          // Create command pool
         int vbS = CreateVertexBuffer();         // Create vertex buffer object
         int ibS = CreateIndexBuffer();          // Create index buffer object
+        int ubS = CreateUniformBuffers();       // Create uniform buffers
         int cbS = CreateCommandBuffers();       // Create command buffers
         int spS = CreateSemaphores();           // Create rendering semaphores
 
         std::string msg = "Renderer initialization status is [" + std::to_string(acS) + "|" + std::to_string(cpS) + "|" + std::to_string(vbS) + "|" + 
-                                                                  std::to_string(ibS) + "|" + std::to_string(cbS) + "|" + std::to_string(spS) + "].";
+                                                                  std::to_string(ibS) + "|" + std::to_string(cbS) + "|" + std::to_string(ubS) + "|" + std::to_string(spS) + "].";
         logger->log("R0000", msg);
 
-        return acS+ cpS + vbS + ibS + cbS + spS;
+        return acS+ cpS + vbS + ibS + ubS + cbS + spS;
     }
 
     int Renderer::reinitialize() {
@@ -277,6 +284,37 @@ namespace Forge::App {
         return 0;
     }
 
+    // Create uniform buffers on call
+    int Renderer::CreateUniformBuffers() {
+
+        // Size of individual uniform buffers
+        VkDeviceSize uboSize = sizeof(UniformBuffer);
+
+        VkBufferCreateInfo uboCreateInfo = {};                              // uboCreateInfo specifies the parameters of the uniform buffers
+        uboCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;         // Specify uboCreateInfo as structure type BUFFER_CREATE_INFO
+        uboCreateInfo.size = uboSize;                                       // Size of buffer in bytes
+        uboCreateInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;           // Specify buffer usage
+        uboCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;              // Specify if buffer can be shared or not between queue families
+
+        VmaAllocationCreateInfo uboAllocInfo = {};                  // uboAllocInfo specifies the parameters of the memory allocation object
+        uboAllocInfo.usage = VMA_MEMORY_USAGE_CPU_ONLY;             // Specify memory usage
+        uboAllocInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;      // uboAllocInfo flags
+        
+        UniformBuffers.resize(framework->GetImages().size());       // Resize UniformBuffer vector to number of images in the swapchain
+        ubAllocations.resize(framework->GetImages().size());        // Resize ubAllocations vector to number of images in the swapchain
+
+        for (int i = 0; i < UniformBuffers.size(); i++) {
+
+            if (vmaCreateBuffer(allocator, &uboCreateInfo, &uboAllocInfo, &UniformBuffers[i], &ubAllocations[i], nullptr) != VK_SUCCESS) {          // If staging buffer creation fails
+                std::string msg = "Fatal Error: Failed to create staging uniform buffer object at index [" + std::to_string(i) + "].";              //
+                logger->log("R13U0", msg);                                                                                                          // then log the error
+                return 14;                                                                                                                          // and return the corresponding error value
+            }
+        }
+
+        return 0;
+    }
+
     // Create command buffers on call
     int Renderer::CreateCommandBuffers() {
 
@@ -396,6 +434,9 @@ namespace Forge::App {
             return 19;                                                                              // and return the corresponding error value
         }
 
+        // Update Uniform Buffer
+        UpdateUBO(imageIndex);
+
         if (InFlightImages[imageIndex] != VK_NULL_HANDLE)                                                   // If previous frame is using the fence
             vkWaitForFences(core->GetLGPU(), 1, &InFlightFences[currentFrame], VK_TRUE, UINT64_MAX);        // then wait for the fence to finish
 
@@ -456,6 +497,25 @@ namespace Forge::App {
         return 0;
     }
 
+    void Renderer::UpdateUBO(uint32_t _imageIndex) {
+
+        static auto startTime = std::chrono::high_resolution_clock::now();
+
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+        UniformBuffer ubo = {};
+        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.proj = glm::perspective(glm::radians(45.0f), framework->GetExtent().width / (float)framework->GetExtent().height, 0.1f, 10.0f);
+        ubo.proj[1][1] *= -1;
+
+        VmaAllocationInfo uboAllocInfo = {};
+
+        memcpy(uboAllocInfo.pMappedData, &ubo, sizeof(UniformBuffer));
+
+    }
+
     void Renderer::cleanup() {
 
         vkDeviceWaitIdle(core->GetLGPU());
@@ -468,6 +528,13 @@ namespace Forge::App {
         }
 
         vkDestroyCommandPool(core->GetLGPU(), CommandPool, nullptr);
+
+        for (int i = 0; i < ubAllocations.size(); i++)
+            vmaDestroyBuffer(allocator, UniformBuffers[i], ubAllocations[i]);
+
+        UniformBuffers.erase(UniformBuffers.begin(), UniformBuffers.end());
+        ubAllocations.erase(ubAllocations.begin(), ubAllocations.end());
+            
 
         vmaDestroyBuffer(allocator, IndexBuffer, ibAllocation);
         vmaDestroyBuffer(allocator, VertexBuffer, vbAllocation);

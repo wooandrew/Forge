@@ -44,6 +44,7 @@ namespace Forge::App {
         VkSwapchainKHR& GetSwapchain();                     // Returns swapchain object
         VkRenderPass& GetRenderPass();                      // Returns RenderPass object
         std::vector<VkFramebuffer>& GetFramebuffers();      // Returns framebuffers
+        VkDescriptorSetLayout& GetDescriptorSetLayout();    // Returns DescriptorSetLayout object
         VkPipeline& GetPipeline();                          // Returns pipeline object
 
         // Minor component getters
@@ -58,6 +59,7 @@ namespace Forge::App {
         int initSwapchain(GLFWwindow* _window);         // Initialize swapchain object
         int initRenderPass();                           // Initialize renderpass object
         int initFramebuffers();                         // Initialize framebuffers
+        int initDescriptorSet();                        // Initialize descriptor set
         int initPipeline();                             // Initialize pipeline object
 
         // Helper functions
@@ -87,6 +89,8 @@ namespace Forge::App {
         
         std::vector<char> vert;         // Vertex shader buffer
         std::vector<char> frag;         // Fragment shader buffer
+
+        VkDescriptorSetLayout DescriptorSetLayout;      // Handle to descripter set layout object
 
         VkPipelineLayout PipelineLayout;        // Handle to pipeline layout object
         VkPipeline pipeline;                    // Handle to graphics pipeline object
